@@ -1,0 +1,28 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="65" y1="32" x2="377" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="118" y1="88" x2="308" y2="275" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect x="36" y="36" width="288" height="288" rx="72" fill="url(#bg)"/>
+  <circle cx="280" cy="82" r="8" fill="#7DD3FC"/>
+  <path d="M103 117C103 107.611 110.611 100 120 100H240C249.389 100 257 107.611 257 117V239C257 248.389 249.389 256 240 256H120C110.611 256 103 248.389 103 239V117Z" fill="#0F172A"/>
+  <path d="M119 133L180 184L241 133" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M120 239L161 198" stroke="#1E293B" stroke-width="9" stroke-linecap="round"/>
+  <path d="M240 239L199 198" stroke="#1E293B" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="223" cy="201" r="34" fill="#020617" stroke="url(#accent)" stroke-width="10"/>
+  <path d="M214 201C214 195.477 218.477 191 224 191H229C234.523 191 239 195.477 239 201V206C239 211.523 234.523 216 229 216H224C218.477 216 214 211.523 214 206V201Z" fill="#7DD3FC" fill-opacity="0.18" stroke="#7DD3FC" stroke-width="7"/>
+  <path d="M229 216V232" stroke="#22C55E" stroke-width="8" stroke-linecap="round"/>
+  <path d="M202 159L160 201" stroke="#7DD3FC" stroke-width="10" stroke-linecap="round"/>
+
+  <text x="382" y="168" fill="#E5EEF8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="106" font-weight="800" letter-spacing="-3">MailHush</text>
+  <text x="386" y="222" fill="#8FA4B8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="500" letter-spacing="0.2">Mute email addresses in-place without wrecking the page.</text>
+  <rect x="386" y="255" width="208" height="42" rx="21" fill="#0F172A" stroke="#1E293B"/>
+  <circle cx="414" cy="276" r="8" fill="#22C55E"/>
+  <text x="434" y="287" fill="#D8E4F0" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="700">privacy-first extension</text>
+</svg>
