@@ -9,6 +9,8 @@ import {
   writeSettings
 } from "~lib/settings"
 
+const logoUrl = new URL("../assets/logo.png", import.meta.url).href
+
 const BG = "#1e1e1e"
 const SURFACE = "#252525"
 const SURFACE_HOVER = "#2a2a2a"
@@ -75,6 +77,11 @@ function IndexPopup() {
         <div style={{ padding: "14px 16px", borderBottom: `1px solid ${BORDER}` }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <img
+                alt="MailHush logo"
+                src={logoUrl}
+                style={{ width: 26, height: 26, borderRadius: 8, objectFit: "cover" }}
+              />
               <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em" }}>
                 MailHush
               </span>
