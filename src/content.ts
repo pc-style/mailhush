@@ -20,6 +20,8 @@ const blockedParents = new Set([
 let settings: ExtensionSettings | null = null
 let scheduled = false
 let applying = false
+const originalText = new WeakMap<Text, string>()
+const selfMutations = new WeakSet<Text>()
 
 const escapeForRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -52,35 +54,35 @@ const shouldSkipNode = (node: Text) => {
 
 const replaceTextContent = (text: string, rules: EmailRule[]) => {
   let nextText = text
-  let changed = false
 
   for (const rule of rules) {
     const pattern = new RegExp(escapeForRegExp(rule.email), "gi")
-    const replaced = nextText.replace(pattern, rule.replacement)
-
-    if (replaced !== nextText) {
-      nextText = replaced
-      changed = true
-    }
+    nextText = nextText.replace(pattern, rule.replacement)
   }
 
-  return changed ? nextText : null
+  return nextText
 }
 
 const processTextNode = (node: Text) => {
-  const rules = getActiveRules()
-
-  if (!rules.length || shouldSkipNode(node)) {
+  if (shouldSkipNode(node)) {
     return
   }
 
-  const nextText = replaceTextContent(node.nodeValue ?? "", rules)
+  const rules = getActiveRules()
+  const baseText = originalText.get(node) ?? node.nodeValue ?? ""
 
-  if (nextText === null) {
+  if (!originalText.has(node)) {
+    originalText.set(node, baseText)
+  }
+
+  const nextText = rules.length ? replaceTextContent(baseText, rules) : baseText
+
+  if ((node.nodeValue ?? "") === nextText) {
     return
   }
 
   applying = true
+  selfMutations.add(node)
   node.nodeValue = nextText
   applying = false
 }
@@ -120,13 +122,21 @@ const queueFullScan = () => {
 
 const startObserver = () => {
   const observer = new MutationObserver((mutations) => {
-    if (applying || !getActiveRules().length) {
+    if (applying) {
       return
     }
 
     for (const mutation of mutations) {
       if (mutation.type === "characterData" && mutation.target.nodeType === Node.TEXT_NODE) {
-        processTextNode(mutation.target as Text)
+        const target = mutation.target as Text
+
+        if (selfMutations.has(target)) {
+          selfMutations.delete(target)
+          continue
+        }
+
+        originalText.set(target, target.nodeValue ?? "")
+        processTextNode(target)
         continue
       }
 
