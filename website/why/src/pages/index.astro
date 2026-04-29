@@ -4,7 +4,7 @@ import logo from '../assets/logo.png';
 
 const title = 'MailHush — Hide your email before you screenshot, stream, or screenshare';
 const description =
-  'Free open-source Chromium extension that replaces exposed email addresses in the DOM — on Claude, ChatGPT, Gmail, or anywhere they show up.';
+  'Free open-source extension for Chromium & Firefox that replaces exposed email addresses in the DOM — on Claude, ChatGPT, Gmail, or anywhere they show up.';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
 ---
@@ -624,7 +624,7 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
       </h1>
 
       <p class="hero-sub">
-        A free, open-source Chromium extension that swaps exposed email addresses
+        A free, open-source extension for Chromium and Firefox that swaps exposed email addresses
         in the DOM <strong>before you stream, screenshot, or screenshare.</strong>
         Works on Claude, ChatGPT, Gmail — anywhere an email shows up on screen.
       </p>
@@ -643,7 +643,7 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
       <ul class="trust-list" aria-label="Key features">
         <li>Open source</li>
         <li>Runs locally</li>
-        <li>Chromium-based browsers</li>
+        <li>Chromium &amp; Firefox</li>
       </ul>
     </div>
 
@@ -717,12 +717,12 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
   <section class="install-section" id="install" aria-labelledby="install-title">
     <h2 id="install-title">Install in 3 steps</h2>
     <ol class="steps">
-      <li>Download the latest release from GitHub.</li>
-      <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
-      <li>Click <strong>Load unpacked</strong> and select the extracted folder.</li>
+      <li>Download the latest release (<code>.zip</code>) from GitHub.</li>
+      <li><strong>Chrome:</strong> Go to <code>chrome://extensions</code>, enable Developer mode, click Load unpacked, and select the extracted folder.</li>
+      <li><strong>Firefox:</strong> Go to <code>about:debugging</code>, click "This Firefox", then "Load Temporary Add-on...", and select the <code>firefox-mv2-prod.zip</code> file.</li>
     </ol>
     <p class="install-meta">
-      Chromium browsers only · GitHub release install for now · No Chrome Web Store listing yet.
+      GitHub release install for now · No Web Store listings yet.
     </p>
   </section>
   </div>
@@ -731,7 +731,7 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
 
   <section class="cta-section" id="download" aria-labelledby="cta-title">
     <h2 id="cta-title" class="cta-headline">Stop leaking your email on screen.</h2>
-    <p class="cta-sub">Tested on Claude, ChatGPT, and Gmail. Works on any Chromium-based site where email addresses appear in the DOM.</p>
+    <p class="cta-sub">Tested on Claude, ChatGPT, and Gmail. Works on any Chromium or Firefox-based site where email addresses appear in the DOM.</p>
 
     <a href="https://github.com/pc-style/mailhush/releases/latest" class="download-btn" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -739,7 +739,7 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
     </a>
 
     <p class="cta-footnote">
-      Free &amp; open source &middot; Chromium browsers &middot;
+      Free &amp; open source &middot; Chromium &amp; Firefox &middot;
       <a href="https://github.com/pc-style/mailhush" target="_blank" rel="noopener">source code</a>
     </p>
   </section>
