@@ -253,7 +253,7 @@ function RuleRow({
           spellCheck={false}
           style={{ ...input, flex: 1 }}
         />
-        <span style={{ color: TEXT_DIM, fontSize: 11, flexShrink: 0 }}>&rarr;</span>
+        <span style={{ color: TEXT_DIM, fontSize: 11, flexShrink: 0 }}>→</span>
         <input
           value={rule.replacement}
           onChange={(e) => onUpdate({ replacement: e.target.value })}
