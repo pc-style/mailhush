@@ -8,8 +8,12 @@
   "author": "OpenAI Codex",
   "scripts": {
     "dev": "plasmo dev",
+    "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build": "plasmo build",
+    "build:firefox": "plasmo build --target=firefox-mv2",
+    "build:firefox-mv3": "plasmo build --target=firefox-mv3",
     "package": "plasmo package",
+    "package:firefox": "plasmo package --target=firefox-mv2",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
