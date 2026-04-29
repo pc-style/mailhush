@@ -158,7 +158,9 @@ const bootstrap = async () => {
   queueFullScan()
   startObserver()
 
-  chrome.storage.onChanged.addListener(async () => {
+  // Use browser API for Firefox (MV2) and fall back to chrome for Chromium
+  const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome
+  browserApi.storage.onChanged.addListener(async () => {
     settings = await readSettings()
     queueFullScan()
   })

@@ -34,8 +34,10 @@ function IndexPopup() {
     const load = async () => setSettings(await readSettings())
     void load()
     const onChange = () => void load()
-    chrome.storage.onChanged.addListener(onChange)
-    return () => chrome.storage.onChanged.removeListener(onChange)
+    // Use browser API for Firefox (MV2) and fall back to chrome for Chromium
+    const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome
+    browserApi.storage.onChanged.addListener(onChange)
+    return () => browserApi.storage.onChanged.removeListener(onChange)
   }, [])
 
   const flash = (msg: string) => {
