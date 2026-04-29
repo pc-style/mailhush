@@ -1,7 +1,7 @@
 {
   "name": "mailhush",
   "displayName": "MailHush",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "packageManager": "bun@1.2.9",
   "description": "Replace chosen email addresses with custom phrases on any website without breaking page styling.",
@@ -32,12 +32,21 @@
   "manifest": {
     "name": "MailHush",
     "description": "Swap configured email addresses with your own phrases while keeping each site's styling intact.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "permissions": [
       "storage"
     ],
     "host_permissions": [
       "<all_urls>"
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "mailhush@pc-style.github.io",
+        "strict_min_version": "140.0",
+        "data_collection_permissions": {
+          "required": ["none"]
+        }
+      }
+    }
   }
 }
