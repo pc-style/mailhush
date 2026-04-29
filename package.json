@@ -1,7 +1,7 @@
 {
   "name": "mailhush",
   "displayName": "MailHush",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "packageManager": "bun@1.2.9",
   "description": "Replace chosen email addresses with custom phrases on any website without breaking page styling.",
@@ -32,7 +32,7 @@
   "manifest": {
     "name": "MailHush",
     "description": "Swap configured email addresses with your own phrases while keeping each site's styling intact.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "permissions": [
       "storage"
     ],
