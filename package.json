@@ -1,7 +1,7 @@
 {
   "name": "mailhush",
   "displayName": "MailHush",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "private": true,
   "packageManager": "bun@1.2.9",
   "description": "Replace chosen email addresses with custom phrases on any website without breaking page styling.",
@@ -16,9 +16,15 @@
     "package:firefox": "plasmo package --target=firefox-mv2",
     "typecheck": "tsc --noEmit"
   },
+  "alias": {
+    "react": "preact/compat",
+    "react-dom/client": "preact/compat/client",
+    "react-dom": "preact/compat"
+  },
   "dependencies": {
     "@plasmohq/storage": "1.15.0",
     "plasmo": "0.90.5",
+    "preact": "^10.29.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -32,7 +38,7 @@
   "manifest": {
     "name": "MailHush",
     "description": "Swap configured email addresses with your own phrases while keeping each site's styling intact.",
-    "version": "0.0.3",
+    "version": "0.0.6",
     "permissions": [
       "storage"
     ],

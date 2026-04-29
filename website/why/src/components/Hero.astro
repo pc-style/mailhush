@@ -1,0 +1,42 @@
+---
+// src/components/Hero.astro
+---
+
+<section class="hero" id="how-it-works" aria-labelledby="hero-title">
+  <div class="hero-text">
+    <h1 id="hero-title" class="hero-headline">
+      Your email is on every screenshot.<br />
+      <em>MailHush hides it.</em>
+    </h1>
+
+    <p class="hero-sub">
+      A free, open-source extension for Chromium and Firefox that swaps exposed email addresses
+      in the DOM <strong>before you stream, screenshot, or screenshare.</strong>
+      Works on Claude, ChatGPT, Gmail — anywhere an email shows up on screen.
+    </p>
+
+    <div class="hero-actions">
+      <button class="btn-primary open-download-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Extension
+      </button>
+      <a href="#install" class="btn-secondary">
+        Install guide
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <ul class="trust-list" aria-label="Key features">
+      <li>Open source</li>
+      <li>Runs locally</li>
+      <li>Chromium &amp; Firefox</li>
+    </ul>
+  </div>
+
+  <div class="hero-visual">
+    <div class="demo-frame">
+      <img src="/assets/demo.gif" alt="Demo: MailHush replacing an exposed email in the DOM in real time." width="1200" height="675" loading="lazy" decoding="async" />
+    </div>
+    <p class="demo-caption">live &middot; in the DOM &middot; zero page reload</p>
+  </div>
+</section>

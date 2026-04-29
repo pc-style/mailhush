@@ -1,0 +1,13 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+---
+
+<footer class="footer">
+  <a class="footer-brand" href="https://github.com/pc-style/mailhush">
+    <Image src={logo} alt="" width={28} height={28} aria-hidden="true" />
+    <span>MailHush</span>
+  </a><br />
+  privacy-first extension &middot; usage measured with anonymous Vercel Analytics<br />
+  built because Anthropic couldn't be bothered to add a hide button
+</footer>

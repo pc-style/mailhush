@@ -1,0 +1,28 @@
+---
+// src/components/Fix.astro
+---
+
+<section class="fix-section" aria-labelledby="fix-title">
+  <h2 id="fix-title" class="section-label">The fix</h2>
+  <h3 class="fix-headline">
+    MailHush replaces emails<br /><span class="accent">before anyone sees them.</span>
+  </h3>
+  <p class="fix-desc">
+    A tiny browser extension that swaps email addresses in the DOM with whatever you want. No broken layouts. No page reloads — just quiet, in-place replacement.
+  </p>
+
+  <div class="demo-row">
+    <div class="demo-card danger">
+      <div class="demo-label red">Without MailHush</div>
+      <div class="demo-email">
+        <span class="redact">johndoe.real@gmail.com</span>
+      </div>
+    </div>
+    <div class="demo-card safe">
+      <div class="demo-label grn">With MailHush</div>
+      <div class="demo-email">
+        <span class="masked">nunya@business.com</span>
+      </div>
+    </div>
+  </div>
+</section>
