@@ -2,6 +2,14 @@
 import { Image } from 'astro:assets';
 import logo from '../assets/logo.png';
 
+import Hero from '../components/Hero.astro';
+import Scenarios from '../components/Scenarios.astro';
+import Fix from '../components/Fix.astro';
+import Install from '../components/Install.astro';
+import Cta from '../components/Cta.astro';
+import Footer from '../components/Footer.astro';
+import DownloadModal from '../components/DownloadModal.astro';
+
 const title = 'MailHush — Hide your email before you screenshot, stream, or screenshare';
 const description =
   'Free open-source extension for Chromium & Firefox that replaces exposed email addresses in the DOM — on Claude, ChatGPT, Gmail, or anywhere they show up.';
@@ -616,146 +624,27 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
     <span style="font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.04em; color: var(--text-dim);">mailhush</span>
   </header>
 
-  <section class="hero" id="how-it-works" aria-labelledby="hero-title">
-    <div class="hero-text">
-      <h1 id="hero-title" class="hero-headline">
-        Your email is on every screenshot.<br />
-        <em>MailHush hides it.</em>
-      </h1>
+  <Hero />
 
-      <p class="hero-sub">
-        A free, open-source extension for Chromium and Firefox that swaps exposed email addresses
-        in the DOM <strong>before you stream, screenshot, or screenshare.</strong>
-        Works on Claude, ChatGPT, Gmail — anywhere an email shows up on screen.
-      </p>
-
-      <div class="hero-actions">
-        <a href="https://github.com/pc-style/mailhush/releases/latest" class="btn-primary" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download latest release
-        </a>
-        <a href="#install" class="btn-secondary">
-          Install guide
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
-
-      <ul class="trust-list" aria-label="Key features">
-        <li>Open source</li>
-        <li>Runs locally</li>
-        <li>Chromium &amp; Firefox</li>
-      </ul>
-    </div>
-
-    <div class="hero-visual">
-      <div class="demo-frame">
-        <img src="/assets/demo.gif" alt="Demo: MailHush replacing an exposed email in the DOM in real time." width="1200" height="675" loading="lazy" decoding="async" />
-      </div>
-      <p class="demo-caption">live · in the DOM · zero page reload</p>
-    </div>
-  </section>
-
-  <section aria-labelledby="how-it-happens">
-    <h2 id="how-it-happens" class="section-label">How it happens</h2>
-    <div class="scenarios">
-      <article class="scenario">
-        <div class="scenario-icon" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        </div>
-        <div class="scenario-text">
-          <h3>The live stream</h3>
-          <p>You open Claude on stream. Your email sits in the corner the entire time. <strong>2,000 viewers now have it.</strong></p>
-        </div>
-      </article>
-      <article class="scenario">
-        <div class="scenario-icon" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        </div>
-        <div class="scenario-text">
-          <h3>The screenshot</h3>
-          <p>You share a cool Claude conversation. Forgot to crop the header. <strong>Your email is in 47 quote tweets before you notice.</strong></p>
-        </div>
-      </article>
-      <article class="scenario">
-        <div class="scenario-icon" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="scenario-text">
-          <h3>The client demo</h3>
-          <p>Screen-sharing Claude with clients. Your personal Gmail is right there. <strong>Very professional.</strong></p>
-        </div>
-      </article>
-    </div>
-  </section>
+  <Scenarios />
 
   <div class="pair">
-  <section class="fix-section" aria-labelledby="fix-title">
-    <h2 id="fix-title" class="section-label">The fix</h2>
-    <h3 class="fix-headline">
-      MailHush replaces emails<br /><span class="accent">before anyone sees them.</span>
-    </h3>
-    <p class="fix-desc">
-      A tiny browser extension that swaps email addresses in the DOM with whatever you want. No broken layouts. No page reloads — just quiet, in-place replacement.
-    </p>
-
-    <div class="demo-row">
-      <div class="demo-card danger">
-        <div class="demo-label red">Without MailHush</div>
-        <div class="demo-email">
-          <span class="redact">johndoe.real@gmail.com</span>
-        </div>
-      </div>
-      <div class="demo-card safe">
-        <div class="demo-label grn">With MailHush</div>
-        <div class="demo-email">
-          <span class="masked">nunya@business.com</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="install-section" id="install" aria-labelledby="install-title">
-    <h2 id="install-title">Install in 3 steps</h2>
-    <ol class="steps">
-      <li>Download the latest release (<code>.zip</code>) from GitHub and extract it.</li>
-      <li><strong>Chrome:</strong> Go to <code>chrome://extensions</code>, enable Developer mode, click Load unpacked, and select the extracted folder.</li>
-      <li><strong>Firefox:</strong> Open <code>about:debugging</code>, click "This Firefox" on the left sidebar, click "Load Temporary Add-on...", navigate into the extracted folder, and select the <code>manifest.json</code> file.</li>
-    </ol>
-    <p class="install-meta">
-      GitHub release install for now · No Web Store listings yet.
-    </p>
-  </section>
+    <Fix />
+    <Install />
   </div>
 
   <hr class="divider" />
 
-  <section class="cta-section" id="download" aria-labelledby="cta-title">
-    <h2 id="cta-title" class="cta-headline">Stop leaking your email on screen.</h2>
-    <p class="cta-sub">Tested on Claude, ChatGPT, and Gmail. Works on any Chromium or Firefox-based site where email addresses appear in the DOM.</p>
-
-    <a href="https://github.com/pc-style/mailhush/releases/latest" class="download-btn" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Download from GitHub
-    </a>
-
-    <p class="cta-footnote">
-      Free &amp; open source &middot; Chromium &amp; Firefox &middot;
-      <a href="https://github.com/pc-style/mailhush" target="_blank" rel="noopener">source code</a>
-    </p>
-  </section>
+  <Cta />
 
   <hr class="divider" />
 
-  <footer class="footer">
-    <a class="footer-brand" href="https://github.com/pc-style/mailhush">
-      <Image src={logo} alt="" width={28} height={28} aria-hidden="true" />
-      <span>MailHush</span>
-    </a><br />
-    privacy-first extension · usage measured with anonymous Vercel Analytics<br />
-    built because Anthropic couldn't be bothered to add a hide button
-  </footer>
+  <Footer />
 
 </main>
+
+<DownloadModal />
+
 <script>
   import { inject } from '@vercel/analytics';
 
