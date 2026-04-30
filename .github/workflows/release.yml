@@ -57,7 +57,9 @@ jobs:
           generate_release_notes: true
 
       - name: Publish to Firefox Add-ons
-        if: ${{ secrets.SUBMIT_KEYS != '' }}
+        env:
+          SUBMIT_KEYS: ${{ secrets.SUBMIT_KEYS }}
+        if: ${{ env.SUBMIT_KEYS != '' }}
         uses: PlasmoHQ/bpp@v3
         with:
           keys: ${{ secrets.SUBMIT_KEYS }}
