@@ -35,9 +35,10 @@ jobs:
 
       - name: Determine Tag Name
         id: tag
+        shell: bash
         run: |
-          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
-            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            echo "tag=${{ inputs.tag_name }}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else
@@ -55,9 +56,8 @@ jobs:
           generate_release_notes: true
 
       - name: Publish to Firefox Add-ons
-        if: ${{ secrets.SUBMIT_KEYS != '' }}
+        if: secrets.SUBMIT_KEYS != ''
         uses: PlasmoHQ/bpp@v3
         with:
           keys: ${{ secrets.SUBMIT_KEYS }}
           firefox-file: build/firefox-mv2-prod.zip
-
