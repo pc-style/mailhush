@@ -21,7 +21,7 @@ jobs:
         run: bun install
 
       - name: Build Extension
-        run: bun run package:firefox
+        run: bun run build:firefox && bun run package:firefox
 
       - name: Publish to Firefox Add-ons
         uses: PlasmoHQ/bpp@v3

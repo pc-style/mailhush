@@ -4,6 +4,9 @@ on:
       - if: ${{ starts-with(event.git.ref, 'refs/tags/v') }}
         init:
           commit-sha: ${{ event.git.sha }}
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
 
 base:
   image: ubuntu:24.04
@@ -28,4 +31,5 @@ tasks:
     run: |
       export PATH="$HOME/.bun/bin:$PATH"
       bun install
+      bun run build:firefox
       bun run package:firefox
