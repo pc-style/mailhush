@@ -1,4 +1,5 @@
-name: "Release"
+name: Release
+
 on:
   push:
     tags:
@@ -6,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name (e.g. v1.1.0). If empty, uses version from package.json'
+        description: 'Tag name'
         required: false
         default: ''
         type: string
@@ -17,48 +18,18 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Install Dependencies
-        run: bun install
-
-      - name: Build Extension
-        run: |
+      - run: bun install
+      - run: |
           bun run build && bun run package
           bun run build:firefox && bun run package:firefox
-
-      - name: Determine Tag Name
-        id: tag
-        shell: bash
-        run: |
-          TAG_NAME="${{ github.event.inputs.tag_name }}"
-          if [ -n "$TAG_NAME" ]; then
-            echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          else
-            VERSION=$(bun -e "console.log(require('./package.json').version)")
-            echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: |
             build/chrome-mv3-prod.zip
             build/firefox-mv2-prod.zip
           generate_release_notes: true
-
-      - name: Publish to Firefox Add-ons
-        if: ${{ secrets.SUBMIT_KEYS != '' }}
-        uses: PlasmoHQ/bpp@v3
-        with:
-          keys: ${{ secrets.SUBMIT_KEYS }}
-          firefox-file: build/firefox-mv2-prod.zip
