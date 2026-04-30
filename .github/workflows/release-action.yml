@@ -1,40 +1,25 @@
-name: "Release Action"
+name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name'
-        required: false
-        default: ''
+        description: 'Tag'
         type: string
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
       - run: bun install
       - run: |
           bun run build && bun run package
           bun run build:firefox && bun run package:firefox
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag_name || github.ref_name }}
-          files: |
-            build/chrome-mv3-prod.zip
-            build/firefox-mv2-prod.zip
-          generate_release_notes: true
-      - if: ${{ secrets.SUBMIT_KEYS != '' }}
-        uses: PlasmoHQ/bpp@v3
-        with:
-          keys: ${{ secrets.SUBMIT_KEYS }}
-          firefox-file: build/firefox-mv2-prod.zip
+          tag_name: ${{ inputs.tag_name || 'vTEST' }}
+          files: build/*.zip
