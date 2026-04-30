@@ -5,6 +5,12 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g. v1.1.1). If empty, uses the current tag or version from package.json'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build-and-release:
@@ -28,9 +34,23 @@ jobs:
           bun run build && bun run package
           bun run build:firefox && bun run package:firefox
 
+      - name: Determine Tag Name
+        id: tag
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            echo "tag=${{ inputs.tag_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(bun -e "console.log(require('./package.json').version)")
+            echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
           files: |
             build/chrome-mv3-prod.zip
             build/firefox-mv2-prod.zip
