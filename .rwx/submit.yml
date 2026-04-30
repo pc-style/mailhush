@@ -4,9 +4,11 @@ on:
       - if: ${{ starts-with(event.git.ref, 'refs/tags/v') }}
         init:
           commit-sha: ${{ event.git.sha }}
+          git-tag: ${{ event.git.tag }}
   cli:
     init:
       commit-sha: ${{ event.git.sha }}
+      git-tag: ${{ event.git.tag }}
 
 base:
   image: ubuntu:24.04
@@ -14,9 +16,12 @@ base:
 
 tasks:
   - key: setup-node
-    call: nodejs/install 1.1.11
+    call: nodejs/install 1.1.13
     with:
       node-version: '22.12.0'
+
+  - key: github-cli
+    call: github/install-cli 1.0.10
 
   - key: setup-bun
     use: setup-node
@@ -37,5 +42,22 @@ tasks:
     run: |
       export PATH="$HOME/.bun/bin:$PATH"
       bun install
-      bun run build:firefox
-      bun run package:firefox
+      bun run build && bun run package
+      bun run build:firefox && bun run package:firefox
+
+  - key: release
+    use: [github-cli, build]
+    run: |
+      TAG="${{ init.git-tag }}"
+      # Fall back to reading from package.json if tag is empty (manual CLI runs)
+      if [ -z "$TAG" ]; then
+        TAG="v$(node -p "require('./package.json').version")"
+      fi
+      gh release create "$TAG" \
+        build/chrome-mv3-prod.zip \
+        build/firefox-mv2-prod.zip \
+        --generate-notes \
+        --title "$TAG" \
+        || echo "Release may already exist, uploading assets..."
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
