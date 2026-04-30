@@ -20,8 +20,16 @@ const blockedParents = new Set([
 let settings: ExtensionSettings | null = null
 let scheduled = false
 let applying = false
+let applyingTitle = false
+let rawDocumentTitle = ""
 const originalText = new WeakMap<Text, string>()
 const selfMutations = new WeakSet<Text>()
+const originalControlValue = new WeakMap<HTMLInputElement | HTMLTextAreaElement, string>()
+const appliedControlValue = new WeakMap<HTMLInputElement | HTMLTextAreaElement, string>()
+const maskedControls = new WeakSet<HTMLInputElement | HTMLTextAreaElement>()
+
+const hiddenEmailLabel = "[hidden email]"
+const catchAllEmailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
 
 const escapeForRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -31,12 +39,35 @@ const getActiveRules = () =>
     (rule) => rule.enabled && rule.email && rule.replacement
   )
 
-const isEditable = (element: Element | null) =>
-  Boolean(
-    element &&
-      ((element as HTMLElement).isContentEditable ||
-        element.closest("[contenteditable='true']"))
-  )
+const shouldMaskBlurredInputs = () => settings?.enabled === true && settings.blurMaskInputs
+
+const getContentEditableRoot = (element: Element | null): HTMLElement | null => {
+  let current = element as HTMLElement | null
+
+  while (current) {
+    if (current.isContentEditable) {
+      const parent = current.parentElement as HTMLElement | null
+
+      if (!parent?.isContentEditable) {
+        return current
+      }
+    }
+
+    current = current.parentElement
+  }
+
+  return null
+}
+
+const isActiveEditableRoot = (root: HTMLElement) => {
+  const activeElement = document.activeElement
+  return activeElement instanceof Element && root.contains(activeElement)
+}
+
+const getReplacementRules = () => ({
+  rules: getActiveRules(),
+  maskAllEmails: settings?.enabled === true && settings.maskAllEmails
+})
 
 const shouldSkipNode = (node: Text) => {
   const parent = node.parentElement
@@ -45,14 +76,30 @@ const shouldSkipNode = (node: Text) => {
     return true
   }
 
-  if (blockedParents.has(parent.tagName) || isEditable(parent)) {
+  if (blockedParents.has(parent.tagName)) {
     return true
+  }
+
+  const editableRoot = getContentEditableRoot(parent)
+
+  if (editableRoot) {
+    if (!shouldMaskBlurredInputs() && !originalText.has(node)) {
+      return true
+    }
+
+    if (shouldMaskBlurredInputs() && isActiveEditableRoot(editableRoot)) {
+      return true
+    }
   }
 
   return !node.nodeValue || node.nodeValue.trim().length === 0
 }
 
-const replaceTextContent = (text: string, rules: EmailRule[]) => {
+const replaceTextContent = (
+  text: string,
+  rules: EmailRule[],
+  maskAllEmails: boolean
+) => {
   let nextText = text
 
   for (const rule of rules) {
@@ -60,7 +107,22 @@ const replaceTextContent = (text: string, rules: EmailRule[]) => {
     nextText = nextText.replace(pattern, rule.replacement)
   }
 
+  if (maskAllEmails) {
+    nextText = nextText.replace(catchAllEmailPattern, hiddenEmailLabel)
+  }
+
   return nextText
+}
+
+const applyTextNodeValue = (node: Text, value: string) => {
+  if ((node.nodeValue ?? "") === value) {
+    return
+  }
+
+  applying = true
+  selfMutations.add(node)
+  node.nodeValue = value
+  applying = false
 }
 
 const processTextNode = (node: Text) => {
@@ -68,26 +130,49 @@ const processTextNode = (node: Text) => {
     return
   }
 
-  const rules = getActiveRules()
+  const { rules, maskAllEmails } = getReplacementRules()
   const baseText = originalText.get(node) ?? node.nodeValue ?? ""
 
   if (!originalText.has(node)) {
     originalText.set(node, baseText)
   }
 
-  const nextText = rules.length ? replaceTextContent(baseText, rules) : baseText
+  const nextText =
+    rules.length || maskAllEmails
+      ? replaceTextContent(baseText, rules, maskAllEmails)
+      : baseText
 
-  if ((node.nodeValue ?? "") === nextText) {
+  applyTextNodeValue(node, nextText)
+}
+
+const restoreTextSubtree = (root: Node) => {
+  if (root.nodeType === Node.TEXT_NODE) {
+    const textNode = root as Text
+    const baseText = originalText.get(textNode)
+
+    if (typeof baseText === "string") {
+      applyTextNodeValue(textNode, baseText)
+    }
+
     return
   }
 
-  applying = true
-  selfMutations.add(node)
-  node.nodeValue = nextText
-  applying = false
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  let current = walker.nextNode()
+
+  while (current) {
+    const textNode = current as Text
+    const baseText = originalText.get(textNode)
+
+    if (typeof baseText === "string") {
+      applyTextNodeValue(textNode, baseText)
+    }
+
+    current = walker.nextNode()
+  }
 }
 
-const processSubtree = (root: Node) => {
+const processTextSubtree = (root: Node) => {
   if (root.nodeType === Node.TEXT_NODE) {
     processTextNode(root as Text)
     return
@@ -100,6 +185,111 @@ const processSubtree = (root: Node) => {
     processTextNode(current as Text)
     current = walker.nextNode()
   }
+}
+
+const isMaskableInput = (element: HTMLInputElement) => {
+  const type = element.type.toLowerCase()
+  return ["", "text", "search", "email", "url", "tel"].includes(type)
+}
+
+const isMaskableControl = (
+  element: Element | null
+): element is HTMLInputElement | HTMLTextAreaElement => {
+  if (element instanceof HTMLTextAreaElement) {
+    return true
+  }
+
+  return element instanceof HTMLInputElement && isMaskableInput(element)
+}
+
+const restoreControlValue = (element: HTMLInputElement | HTMLTextAreaElement) => {
+  const baseValue = originalControlValue.get(element)
+
+  if (maskedControls.has(element) && typeof baseValue === "string") {
+    element.value = baseValue
+  } else if (!originalControlValue.has(element)) {
+    originalControlValue.set(element, element.value)
+  } else if (element.value !== baseValue) {
+    originalControlValue.set(element, element.value)
+  }
+
+  appliedControlValue.set(element, element.value)
+  maskedControls.delete(element)
+}
+
+const processControlElement = (element: HTMLInputElement | HTMLTextAreaElement) => {
+  if (document.activeElement === element || !shouldMaskBlurredInputs()) {
+    restoreControlValue(element)
+    return
+  }
+
+  const currentValue = element.value
+  const previousValue = originalControlValue.get(element)
+  const previousAppliedValue = appliedControlValue.get(element)
+
+  let baseValue = previousValue ?? currentValue
+
+  if (!originalControlValue.has(element)) {
+    baseValue = currentValue
+  } else if (maskedControls.has(element)) {
+    if (currentValue !== previousAppliedValue) {
+      baseValue = currentValue
+    }
+  } else if (currentValue !== previousValue) {
+    baseValue = currentValue
+  }
+
+  originalControlValue.set(element, baseValue)
+
+  const { rules, maskAllEmails } = getReplacementRules()
+  const nextValue =
+    rules.length || maskAllEmails
+      ? replaceTextContent(baseValue, rules, maskAllEmails)
+      : baseValue
+
+  if (currentValue !== nextValue) {
+    element.value = nextValue
+  }
+
+  appliedControlValue.set(element, nextValue)
+
+  if (nextValue === baseValue) {
+    maskedControls.delete(element)
+  } else {
+    maskedControls.add(element)
+  }
+}
+
+const processControlSubtree = (root: Node) => {
+  if (root instanceof Element && isMaskableControl(root)) {
+    processControlElement(root)
+  }
+
+  if (!(root instanceof Element || root instanceof DocumentFragment)) {
+    return
+  }
+
+  root.querySelectorAll("input, textarea").forEach((element) => {
+    if (isMaskableControl(element)) {
+      processControlElement(element)
+    }
+  })
+}
+
+const processDocumentTitle = () => {
+  const { rules, maskAllEmails } = getReplacementRules()
+  const nextTitle =
+    rules.length || maskAllEmails
+      ? replaceTextContent(rawDocumentTitle, rules, maskAllEmails)
+      : rawDocumentTitle
+
+  if (document.title === nextTitle) {
+    return
+  }
+
+  applyingTitle = true
+  document.title = nextTitle
+  applyingTitle = false
 }
 
 const queueFullScan = () => {
@@ -116,11 +306,13 @@ const queueFullScan = () => {
       return
     }
 
-    processSubtree(document.body)
+    processTextSubtree(document.body)
+    processControlSubtree(document.body)
+    processDocumentTitle()
   })
 }
 
-const startObserver = () => {
+const startContentObserver = () => {
   const observer = new MutationObserver((mutations) => {
     if (applying) {
       return
@@ -141,7 +333,8 @@ const startObserver = () => {
       }
 
       mutation.addedNodes.forEach((node) => {
-        processSubtree(node)
+        processTextSubtree(node)
+        processControlSubtree(node)
       })
     }
   })
@@ -153,10 +346,85 @@ const startObserver = () => {
   })
 }
 
+const startTitleObserver = () => {
+  rawDocumentTitle = document.title
+
+  const observer = new MutationObserver(() => {
+    if (applyingTitle) {
+      return
+    }
+
+    rawDocumentTitle = document.title
+    processDocumentTitle()
+  })
+
+  observer.observe(document.head ?? document.documentElement, {
+    characterData: true,
+    childList: true,
+    subtree: true
+  })
+}
+
+const handleFocusIn = (event: FocusEvent) => {
+  const target = event.target
+
+  if (!(target instanceof Element)) {
+    return
+  }
+
+  if (isMaskableControl(target)) {
+    restoreControlValue(target)
+    return
+  }
+
+  const editableRoot = getContentEditableRoot(target)
+
+  if (editableRoot) {
+    restoreTextSubtree(editableRoot)
+  }
+}
+
+const handleFocusOut = (event: FocusEvent) => {
+  const target = event.target
+
+  if (!(target instanceof Element)) {
+    return
+  }
+
+  requestAnimationFrame(() => {
+    if (isMaskableControl(target)) {
+      processControlElement(target)
+      return
+    }
+
+    const editableRoot = getContentEditableRoot(target)
+
+    if (editableRoot) {
+      processTextSubtree(editableRoot)
+    }
+  })
+}
+
+const handleInput = (event: Event) => {
+  const target = event.target
+
+  if (!(target instanceof Element) || !isMaskableControl(target)) {
+    return
+  }
+
+  originalControlValue.set(target, target.value)
+  appliedControlValue.set(target, target.value)
+  maskedControls.delete(target)
+}
+
 const bootstrap = async () => {
   settings = await readSettings()
   queueFullScan()
-  startObserver()
+  startContentObserver()
+  startTitleObserver()
+  document.addEventListener("focusin", handleFocusIn)
+  document.addEventListener("focusout", handleFocusOut)
+  document.addEventListener("input", handleInput)
 
   // Use browser API for Firefox (MV2) and fall back to chrome for Chromium
   const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome

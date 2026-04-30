@@ -9,6 +9,8 @@ export interface EmailRule {
 
 export interface ExtensionSettings {
   enabled: boolean
+  maskAllEmails: boolean
+  blurMaskInputs: boolean
   rules: EmailRule[]
 }
 
@@ -18,6 +20,8 @@ export const settingsKey = "mailhush-settings"
 
 export const defaultSettings: ExtensionSettings = {
   enabled: true,
+  maskAllEmails: false,
+  blurMaskInputs: false,
   rules: [
     {
       id: "default-rule",
@@ -60,6 +64,8 @@ export const normalizeSettings = (
 
   return {
     enabled: input?.enabled !== false,
+    maskAllEmails: input?.maskAllEmails === true,
+    blurMaskInputs: input?.blurMaskInputs === true,
     rules
   }
 }

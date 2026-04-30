@@ -26,6 +26,7 @@ const MONO = "'SF Mono', 'Cascadia Code', 'Consolas', monospace"
 
 function IndexPopup() {
   const [settings, setSettings] = useState<ExtensionSettings>(defaultSettings)
+  const [shortcut, setShortcut] = useState("Alt+Shift+M")
   const [toast, setToast] = useState("")
   const [saving, setSaving] = useState(false)
   const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -37,6 +38,17 @@ function IndexPopup() {
     // Use browser API for Firefox (MV2) and fall back to chrome for Chromium
     const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome
     browserApi.storage.onChanged.addListener(onChange)
+
+    if (browserApi.commands?.getAll) {
+      void browserApi.commands.getAll().then((commands) => {
+        const command = commands.find((entry) => entry.name === "toggle-mailhush")
+
+        if (command?.shortcut) {
+          setShortcut(command.shortcut)
+        }
+      })
+    }
+
     return () => browserApi.storage.onChanged.removeListener(onChange)
   }, [])
 
@@ -99,7 +111,7 @@ function IndexPopup() {
                   letterSpacing: "0.04em",
                   textTransform: "uppercase"
                 }}>
-                v0.0.1
+                v0.1.0
               </span>
             </div>
             <button
@@ -133,8 +145,61 @@ function IndexPopup() {
             </button>
           </div>
           <p style={{ color: TEXT_SECONDARY, fontSize: 12, margin: "8px 0 0", lineHeight: 1.4 }}>
-            Swap email addresses for custom phrases on any site.
+            Swap email addresses for custom phrases on any site, including tab titles.
           </p>
+        </div>
+
+        <div style={{ padding: "10px 16px 12px", borderBottom: `1px solid ${BORDER}` }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 10
+            }}>
+            <span style={{ fontSize: 11, color: TEXT_DIM, fontWeight: 500 }}>
+              FEATURES
+            </span>
+          </div>
+
+          <FeatureToggle
+            checked={settings.maskAllEmails}
+            description="Replace any remaining email address with [hidden email]."
+            label="Catch-all masking"
+            onChange={(checked) =>
+              void save(
+                { ...settings, maskAllEmails: checked },
+                checked ? "Catch-all on" : "Catch-all off"
+              )
+            }
+          />
+
+          <FeatureToggle
+            checked={settings.blurMaskInputs}
+            description="Hide emails in inputs and editors until you focus them."
+            label="Blur-mask inputs"
+            onChange={(checked) =>
+              void save(
+                { ...settings, blurMaskInputs: checked },
+                checked ? "Blur masking on" : "Blur masking off"
+              )
+            }
+          />
+
+          <div
+            style={{
+              marginTop: 10,
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: `1px solid ${BORDER}`,
+              background: "rgba(255,255,255,0.03)"
+            }}>
+            <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 4 }}>Quick toggle hotkey</div>
+            <div style={{ fontSize: 11, color: TEXT_SECONDARY, lineHeight: 1.4 }}>
+              Press <span style={{ fontFamily: MONO, color: TEXT }}>{shortcut}</span> to toggle MailHush.
+              Customize it from your browser's extension shortcut settings.
+            </div>
+          </div>
         </div>
 
         {/* Rules */}
@@ -209,6 +274,42 @@ function IndexPopup() {
         )}
       </div>
     </main>
+  )
+}
+
+function FeatureToggle({
+  checked,
+  description,
+  label,
+  onChange
+}: {
+  checked: boolean
+  description: string
+  label: string
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <label
+      style={{
+        display: "flex",
+        gap: 10,
+        alignItems: "flex-start",
+        padding: "10px 0",
+        cursor: "pointer"
+      }}>
+      <input
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        style={{ marginTop: 2 }}
+        type="checkbox"
+      />
+      <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={{ fontSize: 12, fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 11, color: TEXT_SECONDARY, lineHeight: 1.4 }}>
+          {description}
+        </span>
+      </span>
+    </label>
   )
 }
 
