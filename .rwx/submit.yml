@@ -1,0 +1,31 @@
+on:
+  github:
+    push:
+      - if: ${{ starts-with(event.git.ref, 'refs/tags/v') }}
+        init:
+          commit-sha: ${{ event.git.sha }}
+
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.0.2
+
+tasks:
+  - key: setup-bun
+    run: |
+      curl -fsSL https://bun.sh/install | bash
+      export PATH="$HOME/.bun/bin:$PATH"
+      echo "export PATH=\"\$HOME/.bun/bin:\$PATH\"" >> $RWX_ENV/PATH
+
+  - key: code
+    call: git/clone 2.0.7
+    with:
+      repository: https://github.com/pc-style/mailhush.git
+      ref: ${{ init.commit-sha }}
+      preserve-git-dir: true
+
+  - key: build
+    use: [setup-bun, code]
+    run: |
+      export PATH="$HOME/.bun/bin:$PATH"
+      bun install
+      bun run package:firefox
