@@ -3,32 +3,70 @@
 ---
 
 <section class="install-section" id="install" aria-labelledby="install-title">
-  <h2 id="install-title">Installation Guide</h2>
-  
-  <div class="install-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
-    <div>
-      <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 1rem;">Chrome / Chromium</h3>
-      <ol class="steps" style="padding-left: 1.2rem;">
-        <li style="margin-bottom: 0.5rem;">Download the latest <strong>Chrome</strong> release (<code>chrome-mv3-prod.zip</code>) from GitHub.</li>
-        <li style="margin-bottom: 0.5rem;">Extract the downloaded <code>.zip</code> file.</li>
-        <li style="margin-bottom: 0.5rem;">Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong> (top right).</li>
-        <li>Click <strong>Load unpacked</strong> and select the extracted folder.</li>
-      </ol>
-    </div>
-    
-    <div>
-      <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 1rem;">Zen Browser</h3>
-      <ol class="steps" style="padding-left: 1.2rem;">
-        <li style="margin-bottom: 0.5rem;">Download the latest <strong>Firefox</strong> release (<code>firefox-mv2-prod.zip</code>) from GitHub.</li>
-        <li style="margin-bottom: 0.5rem;">Open <code>about:debugging</code> in Zen Browser.</li>
-        <li style="margin-bottom: 0.5rem;">Click <strong>This Zen</strong> on the left sidebar.</li>
-        <li style="margin-bottom: 0.5rem;">Click <strong>Load Temporary Add-on...</strong></li>
-        <li>Select the downloaded <code>.zip</code> file directly.</li>
-      </ol>
-    </div>
+  <h2 id="install-title">Install</h2>
+
+  <div class="browser-tabs">
+    <button class="tab-btn active" data-tab="chrome" id="tab-chrome">Chrome</button>
+    <button class="tab-btn" data-tab="zen" id="tab-zen">Zen Browser</button>
   </div>
 
-  <p class="install-meta" style="margin-top: 2rem; text-align: center;">
-    GitHub release install for now &middot; No Web Store listings yet.
-  </p>
+  <div class="tab-panel" id="panel-chrome">
+    <ol class="steps">
+      <li>Download <code>chrome-mv3-prod.zip</code> from GitHub and extract it.</li>
+      <li>Go to <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
+      <li>Click <strong>Load unpacked</strong> and select the extracted folder.</li>
+    </ol>
+  </div>
+
+  <div class="tab-panel hidden" id="panel-zen">
+    <ol class="steps">
+      <li>Download <code>firefox-mv2-prod.zip</code> from GitHub.</li>
+      <li>Open <code>about:debugging</code> in Zen Browser.</li>
+      <li>Click <strong>This Zen</strong> in the left sidebar.</li>
+      <li>Click <strong>Load Temporary Add-on…</strong> and select the <code>.zip</code>.</li>
+    </ol>
+  </div>
+
+  <p class="install-meta">GitHub releases only &middot; no store listing yet.</p>
 </section>
+
+<style>
+  .browser-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--purple-dim), var(--purple));
+    color: #fff;
+  }
+  .tab-panel.hidden { display: none; }
+</style>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`panel-${btn.dataset.tab}`)?.classList.remove('hidden');
+    });
+  });
+</script>
