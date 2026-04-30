@@ -85,7 +85,15 @@ function IndexPopup() {
     void save({ ...settings, rules: settings.rules.filter((r) => r.id !== id) }, "Removed")
 
   return (
-    <main style={{ background: BG, color: TEXT, fontFamily: FONT, minWidth: 370, padding: 8 }}>
+    <>
+      <style>{`
+        html, body {
+          margin: 0;
+          padding: 0;
+          background: ${BG};
+        }
+      `}</style>
+      <main style={{ background: BG, color: TEXT, fontFamily: FONT, minWidth: 370, padding: 8 }}>
       <div style={{ background: SURFACE, borderRadius: 10, border: `1px solid ${BORDER}` }}>
         {/* Header */}
         <div style={{ padding: "14px 16px", borderBottom: `1px solid ${BORDER}` }}>
@@ -111,7 +119,7 @@ function IndexPopup() {
                   letterSpacing: "0.04em",
                   textTransform: "uppercase"
                 }}>
-                v0.1.0
+                v1.1.0
               </span>
             </div>
             <button
@@ -274,6 +282,7 @@ function IndexPopup() {
         )}
       </div>
     </main>
+    </>
   )
 }
 

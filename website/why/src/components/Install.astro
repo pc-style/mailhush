@@ -3,13 +3,32 @@
 ---
 
 <section class="install-section" id="install" aria-labelledby="install-title">
-  <h2 id="install-title">Install in 3 steps</h2>
-  <ol class="steps">
-    <li>Download the latest release (<code>.zip</code>) from GitHub and extract it.</li>
-    <li><strong>Chrome:</strong> Go to <code>chrome://extensions</code>, enable Developer mode, click Load unpacked, and select the extracted folder.</li>
-    <li><strong>Firefox:</strong> Open <code>about:debugging</code>, click "This Firefox" on the left sidebar, click "Load Temporary Add-on...", navigate into the extracted folder, and select the <code>manifest.json</code> file.</li>
-  </ol>
-  <p class="install-meta">
+  <h2 id="install-title">Installation Guide</h2>
+  
+  <div class="install-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+    <div>
+      <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 1rem;">Chrome / Chromium</h3>
+      <ol class="steps" style="padding-left: 1.2rem;">
+        <li style="margin-bottom: 0.5rem;">Download the latest <strong>Chrome</strong> release (<code>chrome-mv3-prod.zip</code>) from GitHub.</li>
+        <li style="margin-bottom: 0.5rem;">Extract the downloaded <code>.zip</code> file.</li>
+        <li style="margin-bottom: 0.5rem;">Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong> (top right).</li>
+        <li>Click <strong>Load unpacked</strong> and select the extracted folder.</li>
+      </ol>
+    </div>
+    
+    <div>
+      <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 1rem;">Zen Browser</h3>
+      <ol class="steps" style="padding-left: 1.2rem;">
+        <li style="margin-bottom: 0.5rem;">Download the latest <strong>Firefox</strong> release (<code>firefox-mv2-prod.zip</code>) from GitHub.</li>
+        <li style="margin-bottom: 0.5rem;">Open <code>about:debugging</code> in Zen Browser.</li>
+        <li style="margin-bottom: 0.5rem;">Click <strong>This Zen</strong> on the left sidebar.</li>
+        <li style="margin-bottom: 0.5rem;">Click <strong>Load Temporary Add-on...</strong></li>
+        <li>Select the downloaded <code>.zip</code> file directly.</li>
+      </ol>
+    </div>
+  </div>
+
+  <p class="install-meta" style="margin-top: 2rem; text-align: center;">
     GitHub release install for now &middot; No Web Store listings yet.
   </p>
 </section>
