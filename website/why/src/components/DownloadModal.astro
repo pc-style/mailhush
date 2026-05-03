@@ -20,13 +20,13 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
         </div>
       </a>
       
-      <button class="modal-btn firefox disabled" disabled title="Coming soon to Zen Browser Add-ons">
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/mailhush/" class="modal-btn firefox" target="_blank" rel="noopener">
         <div class="icon-wrapper" set:html={ZenIcon} />
         <div class="btn-text">
-          <span class="btn-name">Zen Browser</span>
-          <span class="btn-status coming-soon">Coming Soon</span>
+          <span class="btn-name">Firefox &amp; Zen</span>
+          <span class="btn-status available">Available Now</span>
         </div>
-      </button>
+      </a>
       
       <button class="modal-btn chrome disabled" disabled title="Coming soon to Chrome Web Store">
         <div class="icon-wrapper" set:html={ChromeIcon} />
@@ -165,6 +165,10 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
   }
   
   .coming-soon {
+    color: var(--purple);
+  }
+
+  .available {
     color: var(--purple);
   }
 </style>

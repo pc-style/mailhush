@@ -1,72 +1,111 @@
 ---
 // src/components/Install.astro
+import GitHubIcon from '../assets/GitHub-dark.svg?raw';
+import ZenIcon from '../assets/Zen Browser-dark.svg?raw';
+import ChromeIcon from '../assets/Chrome.svg?raw';
 ---
 
 <section class="install-section" id="install" aria-labelledby="install-title">
   <h2 id="install-title">Install</h2>
 
-  <div class="browser-tabs">
-    <button class="tab-btn active" data-tab="chrome" id="tab-chrome">Chrome</button>
-    <button class="tab-btn" data-tab="zen" id="tab-zen">Zen Browser</button>
+  <div class="install-options">
+    <a
+      href="https://addons.mozilla.org/en-US/firefox/addon/mailhush/"
+      class="install-btn firefox"
+      target="_blank"
+      rel="noopener"
+    >
+      <div class="icon-wrapper" set:html={ZenIcon} />
+      <div class="btn-text">
+        <span class="btn-name">Firefox &amp; Zen</span>
+        <span class="btn-status available">Mozilla Add-ons</span>
+      </div>
+    </a>
+
+    <a
+      href="https://github.com/pc-style/mailhush/releases/latest"
+      class="install-btn github"
+      target="_blank"
+      rel="noopener"
+    >
+      <div class="icon-wrapper" set:html={GitHubIcon} />
+      <div class="btn-text">
+        <span class="btn-name">GitHub Releases</span>
+        <span class="btn-status available">Latest build</span>
+      </div>
+    </a>
+
+    <div class="install-btn chrome disabled" title="Coming soon to Chrome Web Store">
+      <div class="icon-wrapper" set:html={ChromeIcon} />
+      <div class="btn-text">
+        <span class="btn-name">Chrome</span>
+        <span class="btn-status coming-soon">Coming soon</span>
+      </div>
+    </div>
   </div>
 
-  <div class="tab-panel" id="panel-chrome">
-    <ol class="steps">
-      <li>Download <code>chrome-mv3-prod.zip</code> from GitHub and extract it.</li>
-      <li>Go to <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
-      <li>Click <strong>Load unpacked</strong> and select the extracted folder.</li>
-    </ol>
-  </div>
-
-  <div class="tab-panel hidden" id="panel-zen">
-    <ol class="steps">
-      <li>Download <code>firefox-mv2-prod.zip</code> from GitHub.</li>
-      <li>Open <code>about:debugging</code> in Zen Browser.</li>
-      <li>Click <strong>This Zen</strong> in the left sidebar.</li>
-      <li>Click <strong>Load Temporary Add-on…</strong> and select the <code>.zip</code>.</li>
-    </ol>
-  </div>
-
-  <p class="install-meta">GitHub releases only &middot; no store listing yet.</p>
+  <p class="install-meta">Free &middot; open source &middot; runs locally.</p>
 </section>
 
 <style>
-  .browser-tabs {
+  .install-options {
     display: flex;
-    gap: 4px;
-    margin-bottom: 16px;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .install-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px;
-    width: fit-content;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
   }
-  .tab-btn {
-    background: none;
-    border: none;
+  .install-btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    border-color: var(--purple);
+    background: rgba(168, 85, 247, 0.05);
+  }
+  .install-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+  }
+  .icon-wrapper {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-wrapper :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  .btn-text {
+    display: flex;
+    flex-direction: column;
+  }
+  .btn-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .btn-status {
+    font-size: 13px;
     color: var(--text-dim);
     font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
   }
-  .tab-btn.active {
-    background: linear-gradient(135deg, var(--purple-dim), var(--purple));
-    color: #fff;
+  .available {
+    color: var(--purple);
   }
-  .tab-panel.hidden { display: none; }
+  .coming-soon {
+    color: var(--text-muted);
+  }
 </style>
-
-<script>
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
-  tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById(`panel-${btn.dataset.tab}`)?.classList.remove('hidden');
-    });
-  });
-</script>
