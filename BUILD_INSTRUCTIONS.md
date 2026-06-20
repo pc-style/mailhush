@@ -28,4 +28,4 @@ The final extension package will be generated inside the `build` directory as a 
 ---
 
 ### Regarding `innerHTML` Warnings:
-The validation warnings regarding "Unsafe assignment to innerHTML" are false positives originating from the Preact / React-DOM internals (which we use via the Plasmo framework). We do not use `innerHTML` for any user-facing data rendering.
+The validation warnings regarding "Unsafe assignment to innerHTML" are false positives originating from the Preact / React-DOM internals used by the Plasmo popup bundle. MailHush does not use `innerHTML` or `dangerouslySetInnerHTML` in its source code for user-facing data rendering.
