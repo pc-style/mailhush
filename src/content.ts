@@ -4,7 +4,7 @@ import { readSettings, type EmailRule, type ExtensionSettings } from "~lib/setti
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
-  run_at: "document_idle"
+  run_at: "document_start"
 }
 
 const blockedParents = new Set([
@@ -22,6 +22,7 @@ let scheduled = false
 let applying = false
 let applyingTitle = false
 let rawDocumentTitle = ""
+let startupVeil: HTMLStyleElement | null = null
 const originalText = new WeakMap<Text, string>()
 const selfMutations = new WeakSet<Text>()
 const originalControlValue = new WeakMap<HTMLInputElement | HTMLTextAreaElement, string>()
@@ -30,6 +31,7 @@ const maskedControls = new WeakSet<HTMLInputElement | HTMLTextAreaElement>()
 
 const hiddenEmailLabel = "[hidden email]"
 const catchAllEmailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
+const startupVeilId = "mailhush-startup-veil"
 
 const escapeForRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -68,6 +70,30 @@ const getReplacementRules = () => ({
   rules: getActiveRules(),
   maskAllEmails: settings?.enabled === true && settings.maskAllEmails
 })
+
+const installStartupVeil = () => {
+  if (startupVeil || document.getElementById(startupVeilId)) {
+    return
+  }
+
+  startupVeil = document.createElement("style")
+  startupVeil.id = startupVeilId
+  startupVeil.textContent = `
+    html {
+      visibility: hidden !important;
+    }
+  `
+
+  const parent = document.head ?? document.documentElement
+  parent.prepend(startupVeil)
+}
+
+const removeStartupVeil = () => {
+  startupVeil?.remove()
+  startupVeil = null
+}
+
+installStartupVeil()
 
 const shouldSkipNode = (node: Text) => {
   const parent = node.parentElement
@@ -312,6 +338,27 @@ const queueFullScan = () => {
   })
 }
 
+const runFullScanNow = () => {
+  if (!document.body || applying) {
+    return false
+  }
+
+  processTextSubtree(document.body)
+  processControlSubtree(document.body)
+  processDocumentTitle()
+
+  return true
+}
+
+const revealAfterInitialScan = () => {
+  if (runFullScanNow()) {
+    removeStartupVeil()
+    return
+  }
+
+  requestAnimationFrame(revealAfterInitialScan)
+}
+
 const startContentObserver = () => {
   const observer = new MutationObserver((mutations) => {
     if (applying) {
@@ -419,9 +466,10 @@ const handleInput = (event: Event) => {
 
 const bootstrap = async () => {
   settings = await readSettings()
-  queueFullScan()
   startContentObserver()
   startTitleObserver()
+  revealAfterInitialScan()
+
   document.addEventListener("focusin", handleFocusIn)
   document.addEventListener("focusout", handleFocusOut)
   document.addEventListener("input", handleInput)

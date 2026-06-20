@@ -20,8 +20,8 @@ export const settingsKey = "mailhush-settings"
 
 export const defaultSettings: ExtensionSettings = {
   enabled: true,
-  maskAllEmails: false,
-  blurMaskInputs: false,
+  maskAllEmails: true,
+  blurMaskInputs: true,
   rules: [
     {
       id: "default-rule",
@@ -64,8 +64,8 @@ export const normalizeSettings = (
 
   return {
     enabled: input?.enabled !== false,
-    maskAllEmails: input?.maskAllEmails === true,
-    blurMaskInputs: input?.blurMaskInputs === true,
+    maskAllEmails: input?.maskAllEmails !== false,
+    blurMaskInputs: input?.blurMaskInputs !== false,
     rules
   }
 }
