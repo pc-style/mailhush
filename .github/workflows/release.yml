@@ -64,8 +64,13 @@ jobs:
               shell: bash
               run: |
                   if [ -n "$SUBMIT_KEYS" ]; then
-                    echo "::notice title=Firefox publish::SUBMIT_KEYS is set — uploading firefox-mv2-prod.zip to Firefox Add-ons."
-                    echo "will_publish=true" >> "$GITHUB_OUTPUT"
+                    if node -e "JSON.parse(process.env.SUBMIT_KEYS)" >/dev/null 2>&1; then
+                      echo "::notice title=Firefox publish::SUBMIT_KEYS is set and valid JSON — uploading firefox-mv2-prod.zip to Firefox Add-ons."
+                      echo "will_publish=true" >> "$GITHUB_OUTPUT"
+                    else
+                      echo "::warning title=Firefox publish skipped::SUBMIT_KEYS is set but is not valid JSON — skipping Firefox Add-ons upload."
+                      echo "will_publish=false" >> "$GITHUB_OUTPUT"
+                    fi
                   else
                     echo "::warning title=Firefox publish skipped::SUBMIT_KEYS secret is empty — skipping Firefox Add-ons upload. Add the SUBMIT_KEYS repo secret to enable auto-publishing."
                     echo "will_publish=false" >> "$GITHUB_OUTPUT"
