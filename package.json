@@ -1,7 +1,7 @@
 {
   "name": "mailhush",
   "displayName": "MailHush",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "private": true,
   "packageManager": "bun@1.2.9",
   "description": "Replace chosen email addresses with custom phrases on any website without breaking page styling.",
@@ -9,11 +9,11 @@
   "scripts": {
     "dev": "plasmo dev",
     "dev:firefox": "plasmo dev --target=firefox-mv2",
-    "build": "plasmo build",
-    "build:firefox": "plasmo build --target=firefox-mv2",
-    "build:firefox-mv3": "plasmo build --target=firefox-mv3",
-    "package": "mkdir -p build && plasmo package",
-    "package:firefox": "mkdir -p build && plasmo package --target=firefox-mv2",
+    "build": "plasmo build && node scripts/fix-run-at.js",
+    "build:firefox": "plasmo build --target=firefox-mv2 && node scripts/fix-run-at.js",
+    "build:firefox-mv3": "plasmo build --target=firefox-mv3 && node scripts/fix-run-at.js",
+    "package": "mkdir -p build && node scripts/fix-run-at.js && plasmo package",
+    "package:firefox": "mkdir -p build && node scripts/fix-run-at.js && plasmo package --target=firefox-mv2",
     "typecheck": "tsc --noEmit"
   },
   "alias": {
@@ -38,7 +38,7 @@
   "manifest": {
     "name": "MailHush",
     "description": "Swap configured email addresses with your own phrases while keeping each site's styling intact.",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "permissions": [
       "storage"
     ],
