@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_dir="/Users/pcstyle/projects/04-Browsers/01-Extensions/mailhush"
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+version="$(node -p "require('$repo_dir/package.json').version")"
 chrome_zip="$repo_dir/build/chrome-mv3-prod.zip"
 firefox_zip="$repo_dir/build/firefox-mv2-prod.zip"
-source_zip="$repo_dir/build/mailhush-source-1.1.1.zip"
+source_zip="$repo_dir/build/mailhush-source-$version.zip"
 
 message="Do you want to publish MailHush to the Chrome Web Store and Firefox Add-ons today?
 

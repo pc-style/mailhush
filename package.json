@@ -14,6 +14,8 @@
     "build:firefox-mv3": "plasmo build --target=firefox-mv3 && node scripts/fix-run-at.js",
     "package": "mkdir -p build && node scripts/fix-run-at.js && plasmo package",
     "package:firefox": "mkdir -p build && node scripts/fix-run-at.js && plasmo package --target=firefox-mv2",
+    "package:source": "mkdir -p build && git archive --format=zip --output=build/mailhush-source-$(node -p \"require('./package.json').version\").zip HEAD -- .gitignore BUILD_INSTRUCTIONS.md README.md assets background.ts bun.lock package.json scripts/fix-run-at.js src tests tsconfig.json",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "alias": {

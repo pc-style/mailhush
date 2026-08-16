@@ -6,6 +6,8 @@ build/
 .plasmo/
 dist/
 out/
+/source-code.zip
+/website/why/.vercel/
 
 # local env
 .env
