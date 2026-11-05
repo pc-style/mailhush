@@ -17,6 +17,9 @@ out/
 # logs
 *.log
 
+# Orb portal metadata
+.amp/portals/*
+
 # OS/editor
 .DS_Store
 .vscode/

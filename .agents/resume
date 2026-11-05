@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# No services or credentials need reconnecting after an orb resumes.

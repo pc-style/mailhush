@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "Checking Bun 1.2.9"
+if [[ ! -x "$HOME/.local/bin/bun" ]] || [[ "$("$HOME/.local/bin/bun" --version)" != 1.2.9 ]]; then
+  BUN_INSTALL="$HOME/.local" BUN_INSTALL_NO_MODIFY_PATH=1 bash -o pipefail -c 'curl -fsSL https://bun.sh/install | bash -s "bun-v1.2.9"'
+fi
+export PATH="$HOME/.local/bin:$PATH"
+
+echo "Installing extension dependencies"
+time bun install --frozen-lockfile
+
+echo "Installing website dependencies"
+time npm --prefix website/why ci --no-audit --no-fund
