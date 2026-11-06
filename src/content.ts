@@ -1,484 +1,431 @@
 import type { PlasmoCSConfig } from "plasmo"
 
-import { readSettings, type EmailRule, type ExtensionSettings } from "~lib/settings"
+import { createMasker, type Masker } from "~lib/engine"
+import {
+  defaultSettings,
+  isSiteExcluded,
+  readSettings,
+  settingsKey,
+  type ExtensionSettings
+} from "~lib/settings"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"],
-  run_at: "document_start"
+  run_at: "document_start",
+  all_frames: true
 }
 
-const blockedParents = new Set([
-  "SCRIPT",
-  "STYLE",
-  "NOSCRIPT",
-  "TEXTAREA",
-  "INPUT",
-  "OPTION",
-  "TITLE"
-])
+type Control = HTMLInputElement | HTMLTextAreaElement
 
-let settings: ExtensionSettings | null = null
-let scheduled = false
-let applying = false
-let applyingTitle = false
-let rawDocumentTitle = ""
-let startupVeil: HTMLStyleElement | null = null
-const originalText = new WeakMap<Text, string>()
-const selfMutations = new WeakSet<Text>()
-const originalControlValue = new WeakMap<HTMLInputElement | HTMLTextAreaElement, string>()
-const appliedControlValue = new WeakMap<HTMLInputElement | HTMLTextAreaElement, string>()
-const maskedControls = new WeakSet<HTMLInputElement | HTMLTextAreaElement>()
-
-const hiddenEmailLabel = "[hidden email]"
-const catchAllEmailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
-const startupVeilId = "mailhush-startup-veil"
-
-const escapeForRegExp = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-
-const getActiveRules = () =>
-  (settings?.enabled ? settings.rules : []).filter(
-    (rule) => rule.enabled && rule.email && rule.replacement
-  )
-
-const shouldMaskBlurredInputs = () => settings?.enabled === true && settings.blurMaskInputs
-
-const getContentEditableRoot = (element: Element | null): HTMLElement | null => {
-  let current = element as HTMLElement | null
-
-  while (current) {
-    if (current.isContentEditable) {
-      const parent = current.parentElement as HTMLElement | null
-
-      if (!parent?.isContentEditable) {
-        return current
-      }
-    }
-
-    current = current.parentElement
-  }
-
-  return null
+// What MailHush wrote, and the page's value underneath it.
+interface Masked {
+  original: string
+  applied: string
 }
 
-const isActiveEditableRoot = (root: HTMLElement) => {
-  const activeElement = document.activeElement
-  return activeElement instanceof Element && root.contains(activeElement)
+// Text inside these elements is code, styling, or form values that the page
+// submits; <title> is handled through document.title.
+const skippedParents = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "OPTION", "TITLE", "TEMPLATE"])
+const maskedAttributes = ["title", "alt", "placeholder", "aria-label"]
+const attributeSelector = maskedAttributes.map((name) => `[${name}]`).join(",")
+const maskableInputTypes = new Set(["", "text", "search", "email", "url", "tel"])
+const editableSelector = '[contenteditable]:not([contenteditable="false"])'
+const veilId = "mailhush-startup-veil"
+
+let settings: ExtensionSettings = defaultSettings
+let masker: Masker = { mask: (text) => text }
+let active = false
+
+const maskedText = new WeakMap<Text, Masked>()
+const maskedControls = new WeakMap<Control, Masked>()
+const maskedAttrs = new WeakMap<Element, Map<string, Masked>>()
+const shadowRoots = new Set<ShadowRoot>()
+let maskedTitle: Masked | null = null
+let shownTitle = ""
+
+const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome
+
+// Returns the value MailHush should show for a node whose current value is
+// `current`. If the page changed the value since MailHush masked it, the new
+// value becomes the original.
+const nextValue = (record: Masked | undefined | null, current: string, enabled: boolean) => {
+  const original = record && record.applied === current ? record.original : current
+  const masked = enabled ? masker.mask(original) : original
+  return { original, masked }
 }
 
-const getReplacementRules = () => ({
-  rules: getActiveRules(),
-  maskAllEmails: settings?.enabled === true && settings.maskAllEmails
-})
+// --- Text nodes -----------------------------------------------------------
 
-const installStartupVeil = () => {
-  if (startupVeil || document.getElementById(startupVeilId)) {
-    return
-  }
-
-  startupVeil = document.createElement("style")
-  startupVeil.id = startupVeilId
-  startupVeil.textContent = `
-    html {
-      visibility: hidden !important;
-    }
-  `
-
-  const parent = document.head ?? document.documentElement
-  parent.prepend(startupVeil)
+// document.activeElement stops at shadow hosts; follow it into open roots.
+const deepActiveElement = () => {
+  let active = document.activeElement
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement
+  return active
 }
 
-const removeStartupVeil = () => {
-  startupVeil?.remove()
-  startupVeil = null
+const isEditable = (element: Element) => {
+  const root = element.closest(editableSelector)
+  return root !== null && (!settings.maskInputs || root.contains(deepActiveElement()))
 }
 
-installStartupVeil()
-
-const shouldSkipNode = (node: Text) => {
+const processText = (node: Text) => {
   const parent = node.parentElement
+  const record = maskedText.get(node)
+  const current = node.data
+  const enabled = active && parent !== null && !skippedParents.has(parent.nodeName)
+  const { original, masked } = nextValue(record, current, enabled)
 
-  if (!parent) {
-    return true
-  }
-
-  if (blockedParents.has(parent.tagName)) {
-    return true
-  }
-
-  const editableRoot = getContentEditableRoot(parent)
-
-  if (editableRoot) {
-    if (!shouldMaskBlurredInputs() && !originalText.has(node)) {
-      return true
-    }
-
-    if (shouldMaskBlurredInputs() && isActiveEditableRoot(editableRoot)) {
-      return true
-    }
-  }
-
-  return !node.nodeValue || node.nodeValue.trim().length === 0
-}
-
-const replaceTextContent = (
-  text: string,
-  rules: EmailRule[],
-  maskAllEmails: boolean
-) => {
-  let nextText = text
-
-  for (const rule of rules) {
-    const pattern = new RegExp(escapeForRegExp(rule.email), "gi")
-    nextText = nextText.replace(pattern, rule.replacement)
-  }
-
-  if (maskAllEmails) {
-    nextText = nextText.replace(catchAllEmailPattern, hiddenEmailLabel)
-  }
-
-  return nextText
-}
-
-const applyTextNodeValue = (node: Text, value: string) => {
-  if ((node.nodeValue ?? "") === value) {
+  // Editable content is only checked when something would change, which keeps
+  // the common no-match path free of selector matching.
+  if (masked !== original && !isEditable(parent!)) {
+    maskedText.set(node, { original, applied: masked })
+    if (current !== masked) node.data = masked
     return
   }
 
-  applying = true
-  selfMutations.add(node)
-  node.nodeValue = value
-  applying = false
+  if (record) {
+    maskedText.delete(node)
+    if (current !== original) node.data = original
+  }
 }
 
-const processTextNode = (node: Text) => {
-  if (shouldSkipNode(node)) {
+// --- Form controls ----------------------------------------------------------
+
+const isMaskableControl = (element: Element): element is Control =>
+  element instanceof HTMLTextAreaElement ||
+  (element instanceof HTMLInputElement && maskableInputTypes.has(element.type.toLowerCase()))
+
+const processControl = (control: Control) => {
+  const record = maskedControls.get(control)
+  const current = control.value
+  const enabled = active && settings.maskInputs && deepActiveElement() !== control
+  const { original, masked } = nextValue(record, current, enabled)
+
+  if (masked !== original) {
+    maskedControls.set(control, { original, applied: masked })
+    if (current !== masked) control.value = masked
+  } else if (record) {
+    maskedControls.delete(control)
+    if (current !== original) control.value = original
+  }
+}
+
+const unmaskControl = (control: Control) => {
+  const record = maskedControls.get(control)
+  if (!record) return
+  maskedControls.delete(control)
+  if (control.value === record.applied) control.value = record.original
+}
+
+// --- Attributes -----------------------------------------------------------
+
+const processAttribute = (element: Element, name: string) => {
+  const current = element.getAttribute(name)
+  const records = maskedAttrs.get(element)
+  const record = records?.get(name)
+
+  if (current === null) {
+    records?.delete(name)
     return
   }
 
-  const { rules, maskAllEmails } = getReplacementRules()
-  const baseText = originalText.get(node) ?? node.nodeValue ?? ""
+  const { original, masked } = nextValue(record, current, active && settings.maskAttributes)
 
-  if (!originalText.has(node)) {
-    originalText.set(node, baseText)
+  if (masked !== original) {
+    if (records) records.set(name, { original, applied: masked })
+    else maskedAttrs.set(element, new Map([[name, { original, applied: masked }]]))
+    if (current !== masked) element.setAttribute(name, masked)
+  } else if (record) {
+    records!.delete(name)
+    if (current !== original) element.setAttribute(name, original)
   }
-
-  const nextText =
-    rules.length || maskAllEmails
-      ? replaceTextContent(baseText, rules, maskAllEmails)
-      : baseText
-
-  applyTextNodeValue(node, nextText)
 }
 
-const restoreTextSubtree = (root: Node) => {
+const processAttributes = (element: Element) => {
+  for (const name of maskedAttributes) {
+    if (element.hasAttribute(name)) processAttribute(element, name)
+  }
+}
+
+// --- Title ------------------------------------------------------------------
+
+const processTitle = () => {
+  const current = document.title
+  const { original, masked } = nextValue(maskedTitle, current, active && settings.maskTitle)
+  maskedTitle = masked !== original ? { original, applied: masked } : null
+  if (current !== masked) document.title = masked
+  shownTitle = document.title
+}
+
+// --- Tree scanning ----------------------------------------------------------
+
+// Visits every text node, form control, and open shadow root below `root` in
+// one native TreeWalker pass, skipping script and style subtrees.
+const scan = (root: Node) => {
   if (root.nodeType === Node.TEXT_NODE) {
-    const textNode = root as Text
-    const baseText = originalText.get(textNode)
-
-    if (typeof baseText === "string") {
-      applyTextNodeValue(textNode, baseText)
-    }
-
+    processText(root as Text)
     return
   }
 
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
-  let current = walker.nextNode()
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+  let node: Node | null = root
 
-  while (current) {
-    const textNode = current as Text
-    const baseText = originalText.get(textNode)
+  while (node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      processText(node as Text)
+    } else {
+      const element = node as Element
+      const tag = element.nodeName
 
-    if (typeof baseText === "string") {
-      applyTextNodeValue(textNode, baseText)
-    }
+      if (element.shadowRoot) {
+        observeRoot(element.shadowRoot)
+        scan(element.shadowRoot)
+      } else if (tag.includes("-")) {
+        watchHost(element)
+      }
 
-    current = walker.nextNode()
-  }
-}
+      // Compare tag names first; instanceof checks on every element are slow.
+      if ((tag === "INPUT" || tag === "TEXTAREA") && isMaskableControl(element)) {
+        processControl(element)
+      }
 
-const processTextSubtree = (root: Node) => {
-  if (root.nodeType === Node.TEXT_NODE) {
-    processTextNode(root as Text)
-    return
-  }
-
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
-  let current = walker.nextNode()
-
-  while (current) {
-    processTextNode(current as Text)
-    current = walker.nextNode()
-  }
-}
-
-const isMaskableInput = (element: HTMLInputElement) => {
-  const type = element.type.toLowerCase()
-  return ["", "text", "search", "email", "url", "tel"].includes(type)
-}
-
-const isMaskableControl = (
-  element: Element | null
-): element is HTMLInputElement | HTMLTextAreaElement => {
-  if (element instanceof HTMLTextAreaElement) {
-    return true
-  }
-
-  return element instanceof HTMLInputElement && isMaskableInput(element)
-}
-
-const restoreControlValue = (element: HTMLInputElement | HTMLTextAreaElement) => {
-  const baseValue = originalControlValue.get(element)
-
-  if (maskedControls.has(element) && typeof baseValue === "string") {
-    element.value = baseValue
-  } else if (!originalControlValue.has(element)) {
-    originalControlValue.set(element, element.value)
-  } else if (element.value !== baseValue) {
-    originalControlValue.set(element, element.value)
-  }
-
-  appliedControlValue.set(element, element.value)
-  maskedControls.delete(element)
-}
-
-const processControlElement = (element: HTMLInputElement | HTMLTextAreaElement) => {
-  if (document.activeElement === element || !shouldMaskBlurredInputs()) {
-    restoreControlValue(element)
-    return
-  }
-
-  const currentValue = element.value
-  const previousValue = originalControlValue.get(element)
-  const previousAppliedValue = appliedControlValue.get(element)
-
-  let baseValue = previousValue ?? currentValue
-
-  if (!originalControlValue.has(element)) {
-    baseValue = currentValue
-  } else if (maskedControls.has(element)) {
-    if (currentValue !== previousAppliedValue) {
-      baseValue = currentValue
-    }
-  } else if (currentValue !== previousValue) {
-    baseValue = currentValue
-  }
-
-  originalControlValue.set(element, baseValue)
-
-  const { rules, maskAllEmails } = getReplacementRules()
-  const nextValue =
-    rules.length || maskAllEmails
-      ? replaceTextContent(baseValue, rules, maskAllEmails)
-      : baseValue
-
-  if (currentValue !== nextValue) {
-    element.value = nextValue
-  }
-
-  appliedControlValue.set(element, nextValue)
-
-  if (nextValue === baseValue) {
-    maskedControls.delete(element)
-  } else {
-    maskedControls.add(element)
-  }
-}
-
-const processControlSubtree = (root: Node) => {
-  if (root instanceof Element && isMaskableControl(root)) {
-    processControlElement(root)
-  }
-
-  if (!(root instanceof Element || root instanceof DocumentFragment)) {
-    return
-  }
-
-  root.querySelectorAll("input, textarea").forEach((element) => {
-    if (isMaskableControl(element)) {
-      processControlElement(element)
-    }
-  })
-}
-
-const processDocumentTitle = () => {
-  const { rules, maskAllEmails } = getReplacementRules()
-  const nextTitle =
-    rules.length || maskAllEmails
-      ? replaceTextContent(rawDocumentTitle, rules, maskAllEmails)
-      : rawDocumentTitle
-
-  if (document.title === nextTitle) {
-    return
-  }
-
-  applyingTitle = true
-  document.title = nextTitle
-  applyingTitle = false
-}
-
-const queueFullScan = () => {
-  if (scheduled) {
-    return
-  }
-
-  scheduled = true
-
-  requestAnimationFrame(() => {
-    scheduled = false
-
-    if (!document.body || applying) {
-      return
-    }
-
-    processTextSubtree(document.body)
-    processControlSubtree(document.body)
-    processDocumentTitle()
-  })
-}
-
-const runFullScanNow = () => {
-  if (!document.body || applying) {
-    return false
-  }
-
-  processTextSubtree(document.body)
-  processControlSubtree(document.body)
-  processDocumentTitle()
-
-  return true
-}
-
-const revealAfterInitialScan = () => {
-  if (runFullScanNow()) {
-    removeStartupVeil()
-    return
-  }
-
-  requestAnimationFrame(revealAfterInitialScan)
-}
-
-const startContentObserver = () => {
-  const observer = new MutationObserver((mutations) => {
-    if (applying) {
-      return
-    }
-
-    for (const mutation of mutations) {
-      if (mutation.type === "characterData" && mutation.target.nodeType === Node.TEXT_NODE) {
-        const target = mutation.target as Text
-
-        if (selfMutations.has(target)) {
-          selfMutations.delete(target)
-          continue
+      if (skippedParents.has(tag) && node !== root) {
+        // Skip the subtree: move to the next sibling of this node or an ancestor.
+        node = null
+        while (!node && walker.currentNode !== root) {
+          node = walker.nextSibling()
+          if (!node && !walker.parentNode()) break
         }
-
-        originalText.set(target, target.nodeValue ?? "")
-        processTextNode(target)
         continue
       }
-
-      mutation.addedNodes.forEach((node) => {
-        processTextSubtree(node)
-        processControlSubtree(node)
-      })
-    }
-  })
-
-  observer.observe(document.documentElement, {
-    characterData: true,
-    childList: true,
-    subtree: true
-  })
-}
-
-const startTitleObserver = () => {
-  rawDocumentTitle = document.title
-
-  const observer = new MutationObserver(() => {
-    if (applyingTitle) {
-      return
     }
 
-    rawDocumentTitle = document.title
-    processDocumentTitle()
-  })
+    node = walker.nextNode()
+  }
 
-  observer.observe(document.head ?? document.documentElement, {
-    characterData: true,
-    childList: true,
-    subtree: true
-  })
+  if (root instanceof Element || root instanceof DocumentFragment || root instanceof Document) {
+    if (root instanceof Element) processAttributes(root)
+    root.querySelectorAll(attributeSelector).forEach(processAttributes)
+  }
 }
+
+// The walk reaches every connected shadow root through its host.
+const scanEverything = () => {
+  for (const root of shadowRoots) {
+    if (!root.host.isConnected) shadowRoots.delete(root)
+  }
+  scan(document.documentElement)
+  processTitle()
+}
+
+// --- Observation ------------------------------------------------------------
+
+const handleMutations = (records: MutationRecord[]) => {
+  for (const record of records) {
+    const { target } = record
+
+    if (record.type === "characterData") {
+      processText(target as Text)
+    } else if (record.type === "attributes") {
+      if (record.attributeName !== "value") {
+        processAttribute(target as Element, record.attributeName!)
+      } else if (target instanceof Element && isMaskableControl(target)) {
+        processControl(target)
+      }
+    } else {
+      for (const node of record.addedNodes) {
+        if (node.isConnected) scan(node)
+      }
+    }
+  }
+
+  // Comparing strings is cheaper than tracking how <title> was replaced.
+  if (document.title !== shownTitle) processTitle()
+}
+
+const observer = new MutationObserver(handleMutations)
+const observerOptions: MutationObserverInit = {
+  characterData: true,
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: [...maskedAttributes, "value"]
+}
+
+function observeRoot(root: ShadowRoot) {
+  if (shadowRoots.has(root)) return
+  shadowRoots.add(root)
+  if (active) observer.observe(root, observerOptions)
+  // Focus moves inside one shadow root never reach the document.
+  root.addEventListener("focusin", handleFocusIn as EventListener, true)
+  root.addEventListener("focusout", handleFocusOut as EventListener, true)
+}
+
+// Custom elements often upgrade, and attach their shadow root, after the
+// parser inserted them. Attaching a root causes no mutation, and content
+// scripts cannot hook attachShadow, so recheck new custom elements briefly.
+const pendingHosts = new Map<Element, number>()
+let hostTimer = 0
+
+function watchHost(element: Element) {
+  if (pendingHosts.has(element)) return
+  pendingHosts.set(element, 0)
+  if (!hostTimer) hostTimer = window.setInterval(checkHosts, 500)
+}
+
+function checkHosts() {
+  for (const [element, checks] of pendingHosts) {
+    if (element.shadowRoot) {
+      pendingHosts.delete(element)
+      if (active && element.isConnected) {
+        observeRoot(element.shadowRoot)
+        scan(element.shadowRoot)
+      }
+    } else if (checks >= 20 || !element.isConnected) {
+      pendingHosts.delete(element)
+    } else {
+      pendingHosts.set(element, checks + 1)
+    }
+  }
+  if (pendingHosts.size === 0) {
+    clearInterval(hostTimer)
+    hostTimer = 0
+  }
+}
+
+// --- Focus and forms --------------------------------------------------------
 
 const handleFocusIn = (event: FocusEvent) => {
-  const target = event.target
-
-  if (!(target instanceof Element)) {
-    return
-  }
+  const target = event.composedPath()[0]
+  if (!(target instanceof Element)) return
 
   if (isMaskableControl(target)) {
-    restoreControlValue(target)
+    unmaskControl(target)
     return
   }
 
-  const editableRoot = getContentEditableRoot(target)
-
-  if (editableRoot) {
-    restoreTextSubtree(editableRoot)
-  }
+  const editable = target.closest(editableSelector)
+  if (editable) scan(editable)
 }
 
 const handleFocusOut = (event: FocusEvent) => {
-  const target = event.target
-
-  if (!(target instanceof Element)) {
-    return
-  }
+  const target = event.composedPath()[0]
+  if (!(target instanceof Element)) return
 
   requestAnimationFrame(() => {
     if (isMaskableControl(target)) {
-      processControlElement(target)
+      processControl(target)
       return
     }
 
-    const editableRoot = getContentEditableRoot(target)
-
-    if (editableRoot) {
-      processTextSubtree(editableRoot)
-    }
+    const editable = target.closest(editableSelector)
+    if (editable) scan(editable)
   })
 }
 
+// Typing replaces whatever MailHush stored for the control.
 const handleInput = (event: Event) => {
-  const target = event.target
+  const target = event.composedPath()[0]
+  if (target instanceof Element && isMaskableControl(target)) maskedControls.delete(target)
+}
 
-  if (!(target instanceof Element) || !isMaskableControl(target)) {
+// Forms must validate and submit what the user typed, not the masked text.
+// Validation runs before the submit event, so unmask when the user starts a
+// submission (a submit button click or Enter in a field), then mask again.
+const unmaskForm = (form: HTMLFormElement | null) => {
+  if (!form) return
+  for (const element of form.elements) {
+    if (isMaskableControl(element)) unmaskControl(element)
+  }
+  setTimeout(() => {
+    if (form.isConnected) scan(form)
+  })
+}
+
+const handleSubmit = (event: Event) => {
+  if (event.target instanceof HTMLFormElement) unmaskForm(event.target)
+}
+
+const handleClick = (event: MouseEvent) => {
+  const target = event.composedPath()[0]
+  const button = target instanceof Element ? target.closest("button, input") : null
+  if (button instanceof HTMLButtonElement && button.type === "submit") unmaskForm(button.form)
+  if (button instanceof HTMLInputElement && (button.type === "submit" || button.type === "image")) unmaskForm(button.form)
+}
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  const target = event.composedPath()[0]
+  if (event.key === "Enter" && target instanceof HTMLInputElement) unmaskForm(target.form)
+}
+
+// --- Lifecycle --------------------------------------------------------------
+
+const isPageExcluded = () => {
+  const hosts = [location.hostname]
+  const ancestors = location.ancestorOrigins
+  if (ancestors?.length) {
+    try {
+      hosts.push(new URL(ancestors[ancestors.length - 1]).hostname)
+    } catch {
+      // Opaque origins have no hostname.
+    }
+  }
+  return hosts.some((host) => isSiteExcluded(host, settings.excludedSites))
+}
+
+const apply = (next: ExtensionSettings) => {
+  settings = next
+  const shouldRun = next.enabled && !isPageExcluded()
+  masker = createMasker(next)
+
+  if (shouldRun) {
+    if (!active) {
+      active = true
+      observer.observe(document, observerOptions)
+      for (const root of shadowRoots) observer.observe(root, observerOptions)
+    }
+    scanEverything()
     return
   }
 
-  originalControlValue.set(target, target.value)
-  appliedControlValue.set(target, target.value)
-  maskedControls.delete(target)
+  // Restore everything once, then stop observing so the page pays nothing.
+  if (active) {
+    active = false
+    observer.disconnect()
+    scanEverything()
+  }
+}
+
+// Hide the page until the first scan so masked values never flash on screen.
+const veil = document.createElement("style")
+veil.id = veilId
+veil.textContent = "html { visibility: hidden !important; }"
+if (document instanceof HTMLDocument && !document.getElementById(veilId)) {
+  document.documentElement?.prepend(veil)
 }
 
 const bootstrap = async () => {
-  settings = await readSettings()
-  startContentObserver()
-  startTitleObserver()
-  revealAfterInitialScan()
+  try {
+    apply(await readSettings())
+  } catch {
+    apply(defaultSettings)
+  } finally {
+    veil.remove()
+  }
 
-  document.addEventListener("focusin", handleFocusIn)
-  document.addEventListener("focusout", handleFocusOut)
-  document.addEventListener("input", handleInput)
+  document.addEventListener("focusin", handleFocusIn, true)
+  document.addEventListener("focusout", handleFocusOut, true)
+  document.addEventListener("input", handleInput, true)
+  document.addEventListener("submit", handleSubmit, true)
+  document.addEventListener("click", handleClick, true)
+  document.addEventListener("keydown", handleKeyDown, true)
 
-  // Use browser API for Firefox (MV2) and fall back to chrome for Chromium
-  const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome }).browser ?? chrome
-  browserApi.storage.onChanged.addListener(async () => {
-    settings = await readSettings()
-    queueFullScan()
+  // Settings save on every keystroke; rescan once typing pauses.
+  let reload = 0
+  browserApi.storage.onChanged.addListener((changes) => {
+    if (!(settingsKey in changes)) return
+    clearTimeout(reload)
+    reload = window.setTimeout(() => void readSettings().then(apply), 150)
   })
 }
 
