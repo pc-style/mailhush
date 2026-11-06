@@ -1,8 +1,8 @@
-// The site runs the extension's own masking engine, so every example and the
-// playground show exactly what MailHush 2.0 does. The engine only imports
-// types from settings.ts, so nothing extension-specific is bundled.
-import { createMasker } from '../../../../src/lib/engine';
-import { detectors } from '../../../../src/lib/detectors';
+// The site runs a copy of the extension's masking engine (./engine, kept in
+// sync by tests/website-engine.test.js), so every example and the playground
+// show exactly what MailHush 2.0 does.
+import { createMasker } from './engine/engine';
+import { detectors } from './engine/detectors';
 
 export { detectors };
 export type Style = 'label' | 'dots' | 'partial';
