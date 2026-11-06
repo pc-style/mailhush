@@ -67,6 +67,7 @@ describe("detectors", () => {
 
   test("IPv6 alone masks the whole IPv4-mapped address", () => {
     expect(only(["ipv6"]).mask("from ::ffff:192.0.2.128.")).toBe("from [IPv6].")
+    expect(only(["ipv6"]).mask("::ffff:192.000.002.001")).toBe("::ffff:192.000.002.001")
   })
 
   test("disabled detectors do not mask", () => {

@@ -263,9 +263,9 @@ function observeRoot(root: ShadowRoot) {
   if (shadowRoots.has(root)) return
   shadowRoots.add(root)
   if (active) observer.observe(root, observerOptions)
-  // Focus moves inside one shadow root never reach the document.
-  root.addEventListener("focusin", handleFocusIn as EventListener, true)
-  root.addEventListener("focusout", handleFocusOut as EventListener, true)
+  // Focus moves and resets inside a shadow root never reach the document,
+  // and nothing reaches it once the host is detached.
+  for (const [type, listener] of rootListeners) root.addEventListener(type, listener, true)
 }
 
 // --- Focus and forms --------------------------------------------------------
@@ -350,8 +350,10 @@ const handleReset = (event: Event) => {
 
 // --- Signals from the page world (src/page-hooks.ts) ---------------
 
+// event.target is the shadow host when the form is inside a shadow root.
 const handleFormSignal = (event: Event) => {
-  if (event.target instanceof HTMLFormElement) unmaskForm(event.target, queueMicrotask)
+  const form = event.composedPath()[0]
+  if (form instanceof HTMLFormElement) unmaskForm(form, queueMicrotask)
 }
 
 const handleValueSignal = (event: Event) => {
@@ -367,6 +369,44 @@ const handleShadowSignal = (event: Event) => {
 }
 
 // --- Lifecycle --------------------------------------------------------------
+
+// Signals are composed, so one from an attached shadow root reaches both its
+// root's listener and the document's; handle each event once.
+const handledSignals = new WeakSet<Event>()
+const once = (listener: (event: Event) => void) => (event: Event) => {
+  if (handledSignals.has(event)) return
+  handledSignals.add(event)
+  listener(event)
+}
+
+const signalListeners: [string, EventListener][] = [
+  ["mailhush:form", once(handleFormSignal)],
+  ["mailhush:value", once(handleValueSignal)],
+  ["mailhush:shadow", once(handleShadowSignal)]
+]
+
+const rootListeners: [string, EventListener][] = [
+  ["focusin", handleFocusIn as EventListener],
+  ["focusout", handleFocusOut as EventListener],
+  ["reset", handleReset],
+  ...signalListeners
+]
+
+// The top-level host for frames that cannot read it: Firefox before 148 has
+// no location.ancestorOrigins, and a referrer policy can redact it to "null".
+// If the background never answers, the frame masks, which is the safe side.
+const lookupTopHost = async () => {
+  const ancestors = location.ancestorOrigins
+  if (window === window.top || (ancestors?.length && ancestors[ancestors.length - 1] !== "null")) return ""
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return (await browserApi.runtime.sendMessage({ type: "mailhush:top-host" })) ?? ""
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+  }
+  return ""
+}
 
 const isPageExcluded = () => {
   const hosts = [location.hostname, topHost]
@@ -419,11 +459,7 @@ if (document instanceof HTMLDocument && !document.getElementById(veilId)) {
 }
 
 const bootstrap = async () => {
-  // Firefox before 148 has no location.ancestorOrigins, so frames ask the
-  // background which site the tab shows.
-  if (window !== window.top && !location.ancestorOrigins) {
-    topHost = await browserApi.runtime.sendMessage({ type: "mailhush:top-host" }).catch(() => "")
-  }
+  topHost = await lookupTopHost()
 
   try {
     apply(await readSettings())
@@ -440,9 +476,7 @@ const bootstrap = async () => {
   document.addEventListener("click", handleClick, true)
   document.addEventListener("keydown", handleKeyDown, true)
   document.addEventListener("reset", handleReset, true)
-  document.addEventListener("mailhush:form", handleFormSignal, true)
-  document.addEventListener("mailhush:value", handleValueSignal, true)
-  document.addEventListener("mailhush:shadow", handleShadowSignal, true)
+  for (const [type, listener] of signalListeners) document.addEventListener(type, listener, true)
 
   // Settings save on every keystroke; rescan once typing pauses.
   let reload = 0

@@ -136,7 +136,8 @@ const acceptPesel = (match: string) => {
 const acceptIpv6 = (match: string) => {
   // An embedded IPv4 address (::ffff:192.0.2.1) takes the place of two groups.
   const embedded = /:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(match)
-  if (embedded && embedded[1].split(".").some((octet) => Number(octet) > 255)) return 0
+  // Same octet rules as the IPv4 detector: 0–255, no leading zeros.
+  if (embedded && embedded[1].split(".").some((octet) => Number(octet) > 255 || /^0\d/.test(octet))) return 0
   const address = embedded ? match.slice(0, embedded.index + 1) + "0:0" : match
   if (!embedded && match.includes(".")) return 0
 

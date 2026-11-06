@@ -35,7 +35,8 @@ for (const name of formMethods) {
 
 window.FormData = new Proxy(FormData, {
   construct(target, args, newTarget) {
-    if (args[0] instanceof HTMLFormElement) signal(args[0], "form")
+    // Forms from same-origin frames fail instanceof against this realm's class.
+    if (Object.prototype.toString.call(args[0]) === "[object HTMLFormElement]") signal(args[0], "form")
     return Reflect.construct(target, args, newTarget)
   }
 })
@@ -48,7 +49,9 @@ for (const prototype of [HTMLInputElement.prototype, HTMLTextAreaElement.prototy
     ...descriptor,
     set(this: HTMLInputElement | HTMLTextAreaElement, value: string) {
       descriptor.set!.call(this, value)
-      signal(this, "value")
+      // Mask after the page's current code finishes, still before paint, so
+      // the script can read back what it just wrote.
+      queueMicrotask(() => signal(this, "value"))
     }
   })
 }

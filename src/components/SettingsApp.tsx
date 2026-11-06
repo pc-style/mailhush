@@ -56,6 +56,7 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
   const [settings, setSettings] = useState<ExtensionSettings>(defaultSettings)
   const [toast, setToast] = useState("")
   const writes = useRef(0)
+  const saves = useRef(0)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastWritten = useRef("")
   // Edits made before stored settings load would overwrite them with defaults.
@@ -90,6 +91,7 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
   // nothing; content scripts debounce their rescans instead.
   const save = async (next: ExtensionSettings, message?: string) => {
     if (!loaded.current) return
+    const seq = ++saves.current
     setSettings(next)
     lastWritten.current = JSON.stringify(normalizeSettings(next))
     writes.current += 1
@@ -97,8 +99,13 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
       await writeSettings(next)
       if (message) flash(message)
     } catch (error) {
-      // Show what is actually stored, so the screen never claims an unsaved change.
-      setSettings(await readSettings().catch(() => settings))
+      // Show what is actually stored, so the screen never claims an unsaved
+      // change, unless a newer edit has replaced this one meanwhile.
+      const stored = await readSettings().catch(() => null)
+      if (stored && seq === saves.current) {
+        lastWritten.current = JSON.stringify(stored)
+        setSettings(stored)
+      }
       flash(error instanceof Error ? error.message : "Could not save settings")
     } finally {
       writes.current -= 1
