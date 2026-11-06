@@ -32,7 +32,7 @@ const styled = (style: MaskStyle, label: string, partial = (match: string) => ke
 
 /** Compiles a custom rule, or explains why it cannot be used. */
 export const compileRule = (rule: Pick<CustomRule, "pattern" | "regex" | "caseSensitive">) => {
-  if (!rule.pattern) return { error: "Empty pattern" }
+  if (!rule.pattern.trim()) return { error: "Empty pattern" }
 
   const source = rule.regex ? rule.pattern : escapeForRegExp(rule.pattern)
   try {

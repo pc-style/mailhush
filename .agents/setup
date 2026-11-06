@@ -16,8 +16,8 @@ echo "Installing website dependencies"
 time npm --prefix website/why ci --no-audit --no-fund
 
 echo "Installing fonts and Xvfb for extension UI captures"
-sudo -n apt-get install -y --no-install-recommends xvfb fonts-inter fonts-jetbrains-mono fonts-noto-core >/dev/null
-if ! fc-list | grep -q "Cascadia Code"; then
+sudo -n apt-get install -y --no-install-recommends fontconfig xvfb fonts-inter fonts-jetbrains-mono fonts-noto-core >/dev/null
+if ! fc-list | grep "Cascadia Code" >/dev/null; then
   tmp="$(mktemp -d)"
   curl -fsSL -o "$tmp/c.zip" https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip
   unzip -qo "$tmp/c.zip" -d "$tmp/c"

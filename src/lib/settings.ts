@@ -89,8 +89,9 @@ const normalizeRule = (rule: StoredRule | null | undefined): CustomRule | null =
 
   return {
     id: text(rule.id).trim() || crypto.randomUUID(),
-    pattern: rule.regex === true ? pattern : pattern.trim(),
-    replacement: text(rule.replacement).trim(),
+    // Surrounding spaces are meaningful: " Ann " should not match "Annette".
+    pattern,
+    replacement: legacy ? text(rule.replacement).trim() : text(rule.replacement),
     regex: rule.regex === true,
     caseSensitive: rule.caseSensitive === true,
     enabled: rule.enabled !== false

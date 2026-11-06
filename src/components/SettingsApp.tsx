@@ -58,6 +58,8 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
   const writes = useRef(0)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastWritten = useRef("")
+  // Edits made before stored settings load would overwrite them with defaults.
+  const loaded = useRef(false)
   const host = useActiveHost()
   const shortcut = useShortcut()
   const version = browserApi.runtime?.getManifest?.().version ?? ""
@@ -65,6 +67,7 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
   useEffect(() => {
     const load = async () => {
       const stored = await readSettings()
+      loaded.current = true
       // Ignore echoes of this page's own writes so typing is not interrupted.
       if (writes.current > 0 || JSON.stringify(stored) === lastWritten.current) return
       setSettings(stored)
@@ -86,6 +89,7 @@ export function SettingsApp({ page = false }: { page?: boolean }) {
   // Every change is written at once, so closing the popup mid-edit loses
   // nothing; content scripts debounce their rescans instead.
   const save = async (next: ExtensionSettings, message?: string) => {
+    if (!loaded.current) return
     setSettings(next)
     lastWritten.current = JSON.stringify(normalizeSettings(next))
     writes.current += 1
@@ -592,7 +596,7 @@ function StylePreview({ settings }: { settings: ExtensionSettings }) {
           detectors.map((detector) => [detector.id, { ...settings.detectors[detector.id], enabled: true, style: "default" }])
         ) as ExtensionSettings["detectors"]
       }),
-    [settings.maskStyle]
+    [settings.maskStyle, settings.detectors]
   )
   return (
     <div className="preview">
@@ -845,7 +849,12 @@ function Backup({
     input.value = ""
     if (!file) return
     try {
-      onImport(normalizeSettings(JSON.parse(await file.text())))
+      const data = JSON.parse(await file.text())
+      const known = ["enabled", "detectors", "rules", "excludedSites"]
+      if (!data || typeof data !== "object" || Array.isArray(data) || !known.some((key) => key in data)) {
+        throw new Error("Not a settings export")
+      }
+      onImport(normalizeSettings(data))
     } catch {
       onError("That file is not a MailHush settings export")
     }

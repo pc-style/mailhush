@@ -123,9 +123,14 @@ const acceptPesel = (match: string) => {
   const sum = weights.reduce((total, weight, index) => total + weight * digits[index], 0)
   if ((10 - (sum % 10)) % 10 !== digits[10]) return 0
 
-  const month = (digits[2] * 10 + digits[3]) % 20
+  // The month carries the century: +80 for 1800s, +0 for 1900s, +20 for 2000s, and so on.
+  const encodedMonth = digits[2] * 10 + digits[3]
+  const century = [1900, 2000, 2100, 2200, 1800][Math.floor(encodedMonth / 20)]
+  const month = encodedMonth % 20
   const day = digits[4] * 10 + digits[5]
-  return month >= 1 && month <= 12 && day >= 1 && day <= 31 ? match.length : 0
+  if (month < 1 || month > 12 || day < 1) return 0
+  const year = century + digits[0] * 10 + digits[1]
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate() ? match.length : 0
 }
 
 const acceptIpv6 = (match: string) => {
@@ -202,7 +207,7 @@ export const detectors: Detector[] = [
     example: "PL61 1090 1014 0000 0712 1981 2874",
     label: "[IBAN]",
     defaultEnabled: true,
-    minDigits: 8,
+    minDigits: 2,
     minLength: 15,
     pattern: /\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]){11,30}\b/g,
     accept: acceptIban,
@@ -218,7 +223,7 @@ export const detectors: Detector[] = [
     minDigits: 13,
     // The leading \d lets the regex engine skip non-digits before running the lookbehind.
     minLength: 13,
-    pattern: /\d(?<!\d[ -]?\d)(?:[ -]?\d){12,18}(?![ -]?\d)/g,
+    pattern: /\d(?<!\d[ \u00a0\u202f-]?\d)(?:[ \u00a0\u202f-]?\d){12,18}(?![ \u00a0\u202f-]?\d)/g,
     accept: acceptCard,
     partial: (match) => keepLast(match, 4)
   },

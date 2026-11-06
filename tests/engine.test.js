@@ -26,6 +26,8 @@ describe("detectors", () => {
   test.each([
     ["Write to Jane.Doe+news@mail.example.co.uk today", "Write to [email] today"],
     ["Card 4111 1111 1111 1111 on file", "Card [card] on file"],
+    ["Card 4111\u00a01111\u00a01111\u00a01111 on file", "Card [card] on file"],
+    ["MT86MALT01100ABCDEFGHIJKLMNOPQR", "[IBAN]"],
     ["IBAN PL61 1090 1014 0000 0712 1981 2874 PLN", "IBAN [IBAN] PLN"],
     ["GB82WEST12345698765432.", "[IBAN]."],
     ["SSN 123-45-6789", "SSN [SSN]"],
@@ -50,6 +52,7 @@ describe("detectors", () => {
     "Card 4111 1111 1111 1112 fails Luhn",
     "IBAN PL61 1090 1014 0000 0712 1981 2875 fails mod-97",
     "PESEL 44051401358 fails checksum",
+    "PESEL 44023101353 has no February 31",
     "Released 2024-01-15 and 15.10.2024",
     "Version 1.2.3.4.5 and 999.1.1.1",
     "Meet at 10:30:00 and use std::vector",
@@ -98,6 +101,10 @@ describe("custom rules", () => {
     expect(withRules([{ pattern: "Acme (Inc.)", replacement: "Client" }]).mask("acme (inc.) and AcmeXInc")).toBe(
       "Client and AcmeXInc"
     )
+  })
+
+  test("literal rules keep surrounding spaces", () => {
+    expect(withRules([{ pattern: " Ann ", replacement: " A. " }]).mask("Hi Ann and Annette")).toBe("Hi A. and Annette")
   })
 
   test("case-sensitive rules only match exact case", () => {

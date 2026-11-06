@@ -9,10 +9,12 @@ import {
   type ExtensionSettings
 } from "~lib/settings"
 
-export const config: PlasmoCSConfig = {
+export const config: PlasmoCSConfig & { match_about_blank: boolean } = {
   matches: ["<all_urls>"],
   run_at: "document_start",
-  all_frames: true
+  all_frames: true,
+  // about:blank and srcdoc frames inherit their parent's origin and content.
+  match_about_blank: true
 }
 
 type Control = HTMLInputElement | HTMLTextAreaElement
@@ -72,12 +74,13 @@ const processText = (node: Text) => {
   const parent = node.parentElement
   const record = maskedText.get(node)
   const current = node.data
-  const enabled = active && parent !== null && !skippedParents.has(parent.nodeName)
+  // Text placed directly in a shadow root has no parent element.
+  const enabled = active && (parent ? !skippedParents.has(parent.nodeName) : node.parentNode instanceof ShadowRoot)
   const { original, masked } = nextValue(record, current, enabled)
 
   // Editable content is only checked when something would change, which keeps
   // the common no-match path free of selector matching.
-  if (masked !== original && !isEditable(parent!)) {
+  if (masked !== original && !(parent && isEditable(parent))) {
     maskedText.set(node, { original, applied: masked })
     if (current !== masked) node.data = masked
     return
@@ -326,7 +329,8 @@ const handleFocusOut = (event: FocusEvent) => {
 // Typing replaces whatever MailHush stored for the control.
 const handleInput = (event: Event) => {
   const target = event.composedPath()[0]
-  if (target instanceof Element && isMaskableControl(target)) maskedControls.delete(target)
+  if (!(target instanceof Element) || !isMaskableControl(target)) return
+  if (target.value !== maskedControls.get(target)?.applied) maskedControls.delete(target)
 }
 
 // Forms must validate and submit what the user typed, not the masked text.
@@ -337,8 +341,11 @@ const unmaskForm = (form: HTMLFormElement | null) => {
   for (const element of form.elements) {
     if (isMaskableControl(element)) unmaskControl(element)
   }
+  // form.elements includes controls outside the form that use form="id".
   setTimeout(() => {
-    if (form.isConnected) scan(form)
+    for (const element of form.elements) {
+      if (element.isConnected && isMaskableControl(element)) processControl(element)
+    }
   })
 }
 
@@ -399,7 +406,7 @@ const apply = (next: ExtensionSettings) => {
 // Hide the page until the first scan so masked values never flash on screen.
 const veil = document.createElement("style")
 veil.id = veilId
-veil.textContent = "html { visibility: hidden !important; }"
+veil.textContent = "html, html * { visibility: hidden !important; }"
 if (document instanceof HTMLDocument && !document.getElementById(veilId)) {
   document.documentElement?.prepend(veil)
 }
