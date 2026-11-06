@@ -1,0 +1,124 @@
+---
+// src/components/Detects.astro
+const detectors = [
+  { name: 'Email addresses', example: 'jane.doe@example.com', masked: '[email]', on: true },
+  { name: 'API keys & tokens', example: 'AWS, GitHub, Stripe, Slack, OpenAI, JWTs', masked: '[secret]', on: true },
+  { name: 'Bank accounts (IBAN)', example: 'mod-97 checked', masked: '••••••••2874', on: true },
+  { name: 'Card numbers', example: 'Luhn checked', masked: '•••• 1111', on: true },
+  { name: 'Phone numbers', example: '+48 601 234 567', masked: '[phone]' },
+  { name: 'US Social Security', example: '123-45-6789', masked: '[SSN]' },
+  { name: 'PESEL', example: 'checksum and birth date', masked: '[PESEL]' },
+  { name: 'IPv4 & IPv6', example: '203.0.113.42', masked: '[IP]' },
+  { name: 'MAC addresses', example: '00:1A:2B:3C:4D:5E', masked: '[MAC]' },
+  { name: 'Crypto wallets', example: 'Bitcoin and Ethereum', masked: '[wallet]' },
+];
+---
+
+<section class="detects" aria-labelledby="detects-title">
+  <h2 id="detects-title" class="section-label">What it hides</h2>
+
+  <ul class="detector-grid">
+    {detectors.map((d) => (
+      <li class="detector">
+        <div class="detector-head">
+          <span class="detector-name">{d.name}</span>
+          {d.on && <span class="detector-on">on by default</span>}
+        </div>
+        <span class="detector-example">{d.example}</span>
+        <span class="detector-masked">{d.masked}</span>
+      </li>
+    ))}
+    <li class="detector custom">
+      <div class="detector-head">
+        <span class="detector-name">Your own rules</span>
+      </div>
+      <span class="detector-example">names, project codes, order numbers — exact text or regex</span>
+      <span class="detector-masked">Client&nbsp;A</span>
+    </li>
+  </ul>
+
+  <ul class="extras">
+    <li><strong>Everywhere on the page:</strong> text, form fields, shadow DOM, iframes, tooltips, and the tab title.</li>
+    <li><strong>Forms still work:</strong> they submit what you typed, not the mask.</li>
+    <li><strong>Your call:</strong> turn each detector on or off, set its style and label, skip whole sites, and back up your settings as JSON.</li>
+  </ul>
+</section>
+
+<style>
+  .detects {
+    margin-bottom: 64px;
+    animation: fadeSlideIn 0.8s 0.45s ease both;
+  }
+  .detector-grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .detector {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-width: 0;
+  }
+  .detector.custom {
+    border-style: dashed;
+    border-color: var(--border-accent);
+  }
+  .detector-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .detector-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .detector-on {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--green);
+    white-space: nowrap;
+  }
+  .detector-example {
+    font-size: 13px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+  .detector-masked {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--purple);
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .extras {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+  .extras strong {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  @media (max-width: 760px) {
+    .extras { grid-template-columns: 1fr; gap: 12px; }
+  }
+</style>

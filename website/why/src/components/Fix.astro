@@ -5,23 +5,28 @@
 <section class="fix-section" aria-labelledby="fix-title">
   <h2 id="fix-title" class="section-label">The fix</h2>
   <h3 class="fix-headline">
-    MailHush replaces emails<br /><span class="accent">in rendered page content.</span>
+    MailHush masks it<br /><span class="accent">in rendered page content.</span>
   </h3>
   <p class="fix-desc">
-    A browser extension that swaps email addresses in the DOM with configured text, without a page reload.
+    Sensitive text is replaced in the DOM as the page renders, with no reload and the page's styling intact.
+    Pick a label, dots that keep the shape, or a partial mask.
   </p>
 
   <div class="demo-row">
     <div class="demo-card danger">
       <div class="demo-label red">Without MailHush</div>
-      <div class="demo-email">
-        <span class="redact">johndoe.real@gmail.com</span>
+      <div class="demo-lines">
+        <div class="demo-email"><span class="redact">johndoe.real@gmail.com</span></div>
+        <div class="demo-email"><span class="redact">4111 1111 1111 1111</span></div>
+        <div class="demo-email"><span class="redact">sk_live_51Hx9aQ2e…</span></div>
       </div>
     </div>
     <div class="demo-card safe">
       <div class="demo-label grn">With MailHush</div>
-      <div class="demo-email">
-        <span class="masked">nunya@business.com</span>
+      <div class="demo-lines">
+        <div class="demo-email"><span class="masked">[email]</span></div>
+        <div class="demo-email"><span class="masked">•••• •••• •••• 1111</span></div>
+        <div class="demo-email"><span class="masked">[secret]</span></div>
       </div>
     </div>
   </div>

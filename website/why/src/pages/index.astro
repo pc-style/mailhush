@@ -4,15 +4,16 @@ import logo from '../assets/logo.png';
 
 import Hero from '../components/Hero.astro';
 import Scenarios from '../components/Scenarios.astro';
+import Detects from '../components/Detects.astro';
 import Fix from '../components/Fix.astro';
 import Install from '../components/Install.astro';
 import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import DownloadModal from '../components/DownloadModal.astro';
 
-const title = 'MailHush — Hide your email before you screenshot, stream, or screenshare';
+const title = 'MailHush — Hide emails, cards, and API keys before you screenshot, stream, or screenshare';
 const description =
-  'Browser extension for Chromium and Firefox that locally replaces configured email addresses in rendered page content.';
+  'Browser extension for Chromium and Firefox that masks emails, card numbers, IBANs, API keys, phone numbers, and your own patterns in rendered page content, locally.';
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
 ---
@@ -402,6 +403,7 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
       text-decoration: line-through;
       text-decoration-color: rgba(239, 68, 68, 0.4);
     }
+    .demo-lines { display: flex; flex-direction: column; gap: 10px; }
     .demo-email .masked {
       color: var(--purple);
       background: rgba(139, 92, 246, 0.1);
@@ -627,6 +629,8 @@ const ogImage = new URL('/assets/social-card-aggressive.png', Astro.site);
   <Hero />
 
   <Scenarios />
+
+  <Detects />
 
   <div class="pair">
     <Fix />
