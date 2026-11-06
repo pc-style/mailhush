@@ -1,0 +1,114 @@
+:root {
+  --bg: #121110;
+  --bg-2: #181716;
+  --card: #1f1d1c;
+  --well: #292726;
+  --well-2: #33302f;
+  --line: rgba(255, 245, 235, 0.08);
+  --line-2: rgba(255, 245, 235, 0.14);
+  --text: #ece8e4;
+  --text-2: #bcb6b0;
+  --text-3: #8f8984;
+  --mint: #8fd6b4;
+  --mint-ink: #102219;
+  --mint-soft: rgba(143, 214, 180, 0.13);
+  --red: #f2a3a3;
+  --red-soft: rgba(242, 163, 163, 0.12);
+  --amber: #f0cf8a;
+  --blue: #9cc3f5;
+  --display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
+  --body: 'Hanken Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --radius: 14px;
+  --page: 1180px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 16px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+/* Film grain keeps the large dark fields from looking flat. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+p { margin: 0; }
+a { color: inherit; }
+img, video { max-width: 100%; display: block; }
+code, kbd { font-family: var(--mono); font-size: 0.88em; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--mint); color: var(--mint-ink); }
+
+.wrap { width: 100%; max-width: var(--page); margin: 0 auto; padding: 0 28px; }
+@media (max-width: 640px) { .wrap { padding: 0 18px; } }
+
+.section { padding: 120px 0 0; }
+@media (max-width: 760px) { .section { padding-top: 88px; } }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 18px;
+}
+.eyebrow::before { content: ''; width: 18px; height: 1px; background: currentColor; }
+.section-title { font-size: clamp(34px, 5vw, 58px); line-height: 1.02; max-width: 16ch; }
+.section-lede { color: var(--text-2); font-size: 18px; max-width: 58ch; margin-top: 18px; }
+
+/* A masked value, styled like the extension's own label output. */
+.pill {
+  display: inline-block;
+  font: 500 0.86em/1.35 var(--mono);
+  color: var(--mint);
+  background: var(--mint-soft);
+  padding: 0.08em 0.45em;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.raw { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.45); text-underline-offset: 4px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 0;
+  font: 600 15px/1 var(--body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), background 0.2s, box-shadow 0.3s;
+}
+.btn svg { width: 17px; height: 17px; }
+.btn-primary { background: var(--mint); color: var(--mint-ink); box-shadow: 0 10px 30px -10px rgba(143, 214, 180, 0.6); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -12px rgba(143, 214, 180, 0.75); }
+.btn-ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.btn-ghost:hover { background: var(--well); transform: translateY(-2px); }
+
+.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+.js .reveal.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .js .reveal { opacity: 1; transform: none; }
+}
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

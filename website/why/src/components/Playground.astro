@@ -1,0 +1,174 @@
+---
+import { detectors } from '../lib/mask';
+
+const sample = `Hi Marcus, invoice #4471 is paid.
+Card on file: 4111 1111 1111 1111
+Payouts go to DE89 3704 0044 0532 0130 00.
+
+Reach me at jane.doe@acme-corp.com or +48 601 234 567.
+Session token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLWRlbW8ifQ.ZGVtby1zaWduYXR1cmUtb25seQ
+Prod box 203.0.113.42 is back up.`;
+
+// The playground also turns on phone and IPv4 so the sample shows them.
+const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) => d.id), 'phone', 'ipv4']);
+---
+
+<section class="section" id="try" aria-labelledby="try-title">
+  <div class="wrap">
+    <p class="eyebrow reveal">Playground</p>
+    <h2 id="try-title" class="section-title reveal">Paste anything. Watch it disappear.</h2>
+    <p class="section-lede reveal">
+      This box runs the extension's own masking engine, right here in your browser. Nothing you type leaves this page.
+    </p>
+
+    <div class="pg reveal">
+      <div class="toolbar">
+        <button class="switch" role="switch" aria-checked="true" id="pg-on">
+          <span class="track"><span class="thumb"></span></span>
+          <span class="switch-label">MailHush on</span>
+        </button>
+
+        <div class="segmented" role="radiogroup" aria-label="Mask style">
+          <button role="radio" aria-checked="true" data-style="label">Label</button>
+          <button role="radio" aria-checked="false" data-style="dots">Dots</button>
+          <button role="radio" aria-checked="false" data-style="partial">Partial</button>
+        </div>
+
+        <div class="rule">
+          <span class="rule-tag">Rule</span>
+          <input id="pg-pattern" value="Marcus" aria-label="Custom rule: text to hide" spellcheck="false" />
+          <span class="arrow" aria-hidden="true">→</span>
+          <input id="pg-replace" value="the client" aria-label="Custom rule: replacement" spellcheck="false" />
+        </div>
+      </div>
+
+      <div class="panes">
+        <label class="pane">
+          <span class="pane-head"><span class="dot you"></span>What you see</span>
+          <textarea id="pg-input" spellcheck="false" rows="9">{sample}</textarea>
+        </label>
+        <div class="pane out">
+          <span class="pane-head"><span class="dot viewers"></span>What viewers see <span class="count" id="pg-count"></span></span>
+          <pre id="pg-output" aria-live="polite"></pre>
+        </div>
+      </div>
+
+      <div class="chips" role="group" aria-label="Detectors">
+        {detectors.map((d) => (
+          <button class="chip" aria-pressed={startOn.has(d.id) ? 'true' : 'false'} data-id={d.id}>
+            {d.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pg { margin-top: 48px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px rgba(0, 0, 0, 0.7); overflow: hidden; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+
+  .switch { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 4px; color: var(--text); font: 600 14px/1 var(--body); cursor: pointer; border-radius: 999px; }
+  .track { width: 42px; height: 24px; border-radius: 999px; background: var(--well-2); position: relative; transition: background 0.25s var(--ease); }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text); transition: transform 0.25s var(--ease), background 0.25s; }
+  .switch[aria-checked='true'] .track { background: var(--mint); }
+  .switch[aria-checked='true'] .thumb { transform: translateX(18px); background: var(--mint-ink); }
+
+  .segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--well); }
+  .segmented button { border: 0; background: none; color: var(--text-2); font: 500 13px/1 var(--body); padding: 8px 14px; border-radius: 7px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .segmented button[aria-checked='true'] { background: var(--well-2); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+
+  .rule { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+  .rule-tag { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+  .rule input { width: 118px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 13px var(--mono); }
+  .rule input:focus { outline: none; border-color: var(--mint); }
+  .arrow { color: var(--text-3); }
+  @media (max-width: 860px) { .rule { margin-left: 0; } }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 760px) { .panes { grid-template-columns: 1fr; } }
+  .pane { display: flex; flex-direction: column; min-width: 0; padding: 18px 20px 22px; }
+  .pane.out { background: var(--bg-2); border-left: 1px solid var(--line); }
+  @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1px solid var(--line); } }
+  .pane-head { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.you { background: var(--red); }
+  .dot.viewers { background: var(--mint); }
+  .count { margin-left: auto; color: var(--mint); text-transform: none; letter-spacing: 0; }
+  textarea, pre { font: 14px/1.75 var(--mono); margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  textarea { resize: vertical; width: 100%; border: 0; background: none; color: var(--text); padding: 0; }
+  textarea:focus { outline: none; }
+  pre { color: var(--text-2); }
+  pre :global(mark) { color: var(--mint); background: var(--mint-soft); border-radius: 4px; padding: 1px 3px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+  .chip { border: 1px solid var(--line-2); background: none; color: var(--text-3); font: 500 13px/1 var(--body); padding: 8px 12px; border-radius: 999px; cursor: pointer; transition: all 0.2s var(--ease); }
+  .chip::before { content: '+ '; }
+  .chip[aria-pressed='true'] { color: var(--mint); background: var(--mint-soft); border-color: transparent; }
+  .chip[aria-pressed='true']::before { content: '✓ '; }
+  .chip:hover { border-color: var(--mint); }
+</style>
+
+<script>
+  import { makeMasker, type Style } from '../lib/mask';
+
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+  const input = $<HTMLTextAreaElement>('#pg-input');
+  const output = $<HTMLPreElement>('#pg-output');
+  const count = $<HTMLSpanElement>('#pg-count');
+  const power = $<HTMLButtonElement>('#pg-on');
+  const pattern = $<HTMLInputElement>('#pg-pattern');
+  const replace = $<HTMLInputElement>('#pg-replace');
+  const styles = [...document.querySelectorAll<HTMLButtonElement>('.segmented button')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+
+  let style: Style = 'label';
+  const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const render = () => {
+    const enabled = power.getAttribute('aria-checked') === 'true';
+    const masker = makeMasker({
+      enabled,
+      style,
+      on: chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.id!),
+      rules: [{ pattern: pattern.value, replacement: replace.value }],
+    });
+    const masked = masker.mask(input.value);
+    // Highlight what the engine wrote: labels, bullet runs, and the rule's replacement.
+    const marks = [String.raw`\[[A-Za-z]+\]`, '•+'];
+    if (enabled && pattern.value.trim() && replace.value) marks.unshift(escapeRe(escape(replace.value)));
+    output.innerHTML = escape(masked).replace(new RegExp(marks.join('|'), 'g'), (m) => `<mark>${m}</mark>`);
+    // Count values, not bullet runs: mask again with labels and a sentinel rule.
+    const counter = makeMasker({
+      enabled,
+      on: chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.id!),
+      rules: [{ pattern: pattern.value, replacement: '\u0000' }],
+    });
+    const labels = /\[[A-Za-z]+\]|\u0000/g;
+    const hits = (counter.mask(input.value).match(labels)?.length ?? 0) - (input.value.match(labels)?.length ?? 0);
+    count.textContent = enabled ? `${hits} masked` : 'masking off';
+  };
+
+  power.addEventListener('click', () => {
+    const on = power.getAttribute('aria-checked') !== 'true';
+    power.setAttribute('aria-checked', String(on));
+    power.querySelector('.switch-label')!.textContent = on ? 'MailHush on' : 'MailHush off';
+    render();
+  });
+  styles.forEach((b) =>
+    b.addEventListener('click', () => {
+      styles.forEach((o) => o.setAttribute('aria-checked', String(o === b)));
+      style = b.dataset.style as Style;
+      render();
+    }),
+  );
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+      render();
+    }),
+  );
+  [input, pattern, replace].forEach((el) => el.addEventListener('input', render));
+  render();
+</script>

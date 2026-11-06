@@ -1,42 +1,170 @@
 ---
-// src/components/Hero.astro
+import { mask } from '../lib/mask';
+
+// Words the headline cycles through, each with what MailHush shows instead.
+const words = [
+  { raw: 'email', masked: '[email]' },
+  { raw: 'card', masked: '[card]' },
+  { raw: 'API key', masked: '[secret]' },
+  { raw: 'IBAN', masked: '[IBAN]' },
+  { raw: 'phone', masked: '[phone]' },
+];
+
+// A wall of plausible page text, masked by the real engine, as backdrop.
+const all = ['email', 'secret', 'iban', 'creditCard', 'phone', 'ipv4', 'ssn', 'mac', 'crypto'];
+const wallSource = [
+  'billing@northwind.io  ·  card 4111 1111 1111 1111  ·  exp 09/29',
+  'payout DE89 3704 0044 0532 0130 00  →  status: settled',
+  'SESSION=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLWRlbW8ifQ.ZGVtby1zaWduYXR1cmUtb25seQ',
+  'on-call: +48 601 234 567  ·  ops@acme-corp.com',
+  'last login 203.0.113.42  ·  device 00:1A:2B:3C:4D:5E',
+  'refund to 0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+  'ssn 123-45-6789  ·  verified',
+  'priya.n@acme-corp.com invited marcus.lee@acme-corp.com',
+];
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const wall = wallSource.map((line) =>
+  escape(mask(line, { on: all })).replace(/\[[A-Za-z]+\]/g, (m) => `<b>${m}</b>`),
+);
 ---
 
-<section class="hero" id="how-it-works" aria-labelledby="hero-title">
-  <div class="hero-text">
-    <h1 id="hero-title" class="hero-headline">
-      Your data is on every screenshot.<br />
-      <em>MailHush hides it.</em>
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="wall" aria-hidden="true">
+    {[...wall, ...wall].map((line, i) => <p style={`--i:${i}`} set:html={line} />)}
+  </div>
+
+  <div class="wrap hero-inner">
+    <p class="eyebrow reveal">Chromium · Firefox · Zen</p>
+    <h1 id="hero-title" class="reveal">
+      Share your screen.<br />
+      Not your{' '}<span class="redact" aria-hidden="true" data-words={JSON.stringify(words)}><span class="word">{words[0].raw}</span><span class="bar"><span class="label">{words[0].masked}</span></span></span><span class="visually-hidden">data</span>.
     </h1>
 
-    <p class="hero-sub">
-      A free extension for Chromium, Firefox, and Zen Browser that masks emails, card numbers, IBANs,
-      API keys, and your own words on any page <strong>before you stream, screenshot, or screenshare.</strong>
-    </p>
+    <div class="hero-grid">
+      <div class="hero-copy reveal">
+        <p class="lede">
+          MailHush masks emails, card numbers, IBANs, API keys, phone numbers, and your own words in the page
+          as it renders, so streams, screenshots, and client demos only show what you meant to show.
+        </p>
+        <div class="actions">
+          <button class="btn btn-primary open-download-modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" /></svg>
+            Get MailHush — free
+          </button>
+          <a class="btn btn-ghost" href="#try">Try it here first</a>
+        </div>
+        <ul class="facts">
+          <li><strong>11</strong> detectors + your rules</li>
+          <li><strong>0</strong> network requests</li>
+          <li><strong>3</strong> mask styles</li>
+        </ul>
+      </div>
 
-    <div class="hero-actions">
-      <button class="btn-primary open-download-modal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Extension
-      </button>
-      <a href="#install" class="btn-secondary">
-        Install guide
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
+      <figure class="screen reveal">
+        <div class="chrome">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="url">northwind.app/account</span>
+          <span class="live"><span></span>Live</span>
+        </div>
+        <video autoplay muted loop playsinline preload="metadata" poster="/assets/demo-poster.jpg" width="1200" height="750">
+          <source src="/assets/demo.webm" type="video/webm" />
+          <source src="/assets/demo.mp4" type="video/mp4" />
+        </video>
+        <figcaption>Recorded from MailHush 2.0 on a real page: label, partial, and dots styles, then a focused field showing what you type.</figcaption>
+      </figure>
     </div>
-
-    <ul class="trust-list" aria-label="Key features">
-      <li>11 detectors + your rules</li>
-      <li>Runs locally</li>
-      <li>Public source</li>
-      <li>Chromium, Firefox &amp; Zen</li>
-    </ul>
-  </div>
-
-  <div class="hero-visual">
-    <div class="demo-frame">
-      <img src="/assets/demo.gif" alt="Demo: MailHush replacing an exposed email in the DOM in real time." width="1200" height="675" loading="lazy" decoding="async" />
-    </div>
-    <p class="demo-caption">live &middot; in the DOM &middot; zero page reload</p>
   </div>
 </section>
+
+<style>
+  .hero { position: relative; padding: 72px 0 0; isolation: isolate; }
+  .wall {
+    position: absolute;
+    inset: -68px 0 auto;
+    height: 640px;
+    z-index: -1;
+    overflow: hidden;
+    padding-top: 30px;
+    font: 400 13px/2.3 var(--mono);
+    color: var(--text-3);
+    opacity: 0.32;
+    mask-image: radial-gradient(ellipse 70% 80% at 60% 20%, #000 10%, transparent 75%);
+    white-space: nowrap;
+  }
+  .wall p { transform: translateX(calc(var(--i) * -47px % 300px)); animation: drift 60s linear infinite; }
+  .wall p:nth-child(even) { animation-direction: reverse; }
+  .wall :global(b) { font-weight: 500; color: var(--mint); background: var(--mint-soft); padding: 1px 5px; border-radius: 4px; }
+  @media (max-width: 760px) { .wall { opacity: 0.16; } }
+  @keyframes drift { to { margin-left: -240px; } }
+
+  h1 { font-size: clamp(46px, 8.6vw, 112px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 800; }
+
+  /* A redaction bar sweeps over the word, shows its label, then pulls back. */
+  .redact { position: relative; display: inline-block; white-space: nowrap; }
+  .word { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.5); text-decoration-thickness: 0.045em; text-underline-offset: 0.12em; }
+  .bar {
+    position: absolute;
+    inset: 0.02em -0.08em -0.18em;
+    display: grid;
+    place-items: center;
+    background: var(--mint);
+    border-radius: 0.08em;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.55s var(--ease);
+  }
+  .redact.covered .bar { clip-path: inset(0 0 0 0); }
+  .redact.leaving .bar { clip-path: inset(0 0 0 100%); }
+  .label { font: 600 0.3em/1 var(--mono); letter-spacing: 0; color: var(--mint-ink); opacity: 0; transition: opacity 0.3s 0.25s; }
+  .redact.covered .label { opacity: 1; }
+
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; margin-top: 56px; align-items: start; }
+  @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
+  .lede { font-size: 19px; line-height: 1.55; color: var(--text-2); max-width: 46ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 30px 0 34px; }
+  .facts { list-style: none; margin: 0; padding: 22px 0 0; display: flex; gap: 30px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-3); }
+  .facts strong { display: block; font: 700 28px/1.1 var(--display); color: var(--text); letter-spacing: -0.03em; }
+  @media (max-width: 420px) { .facts { gap: 18px; } }
+
+  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 120px -40px rgba(143, 214, 180, 0.35); overflow: hidden; transform: rotate(0.6deg); transition-delay: 0.15s; }
+  .chrome { display: flex; align-items: center; gap: 14px; padding: 11px 14px; background: var(--well); border-bottom: 1px solid var(--line); }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--well-2); }
+  .url { flex: 1; font: 12px/1 var(--mono); color: var(--text-3); background: var(--bg-2); padding: 7px 10px; border-radius: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .live { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
+  .live span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(242, 163, 163, 0.18); } }
+  video { width: 100%; height: auto; aspect-ratio: 1200 / 750; background: #f6f7f9; }
+  figcaption { padding: 12px 16px; font-size: 13px; color: var(--text-3); border-top: 1px solid var(--line); }
+</style>
+
+<script>
+  const el = document.querySelector<HTMLElement>('.redact')!;
+  const word = el.querySelector<HTMLElement>('.word')!;
+  const label = el.querySelector<HTMLElement>('.label')!;
+  const words: { raw: string; masked: string }[] = JSON.parse(el.dataset.words!);
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.classList.add('covered');
+    document.querySelector<HTMLVideoElement>('.screen video')?.pause();
+  } else {
+    (async () => {
+      for (let i = 0; ; i = (i + 1) % words.length) {
+        word.textContent = words[i].raw;
+        label.textContent = words[i].masked;
+        el.classList.remove('leaving');
+        await wait(1300);
+        el.classList.add('covered');
+        await wait(1700);
+        el.classList.add('leaving');
+        el.classList.remove('covered');
+        await wait(560);
+        // Jump the bar back to the left edge without animating.
+        el.querySelector<HTMLElement>('.bar')!.style.transition = 'none';
+        el.classList.remove('leaving');
+        void el.offsetWidth;
+        el.querySelector<HTMLElement>('.bar')!.style.transition = '';
+      }
+    })();
+  }
+</script>

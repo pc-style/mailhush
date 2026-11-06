@@ -1,0 +1,51 @@
+---
+const covers = [
+  'Text on the page, including open shadow DOM',
+  'Same-origin, srcdoc, and about:blank frames, and cross-origin frames on regular sites',
+  'Text, search, email, URL, and phone fields, and textareas, until you focus them',
+  'Tooltips, alt text, placeholders, aria-labels, and the tab title',
+  'Content added later by the page or set from scripts',
+];
+const misses = [
+  'A field or editor you are typing in. It shows the real value so you can work.',
+  'Number, password, date, and other non-text inputs',
+  'Closed shadow DOM, data: frames, and pages browsers lock to extensions (browser settings, extension stores)',
+  'Images, video, canvas, and PDFs',
+  'The address bar, bookmarks, and other browser UI',
+  'The page source, network traffic, and the data the site stores',
+];
+---
+
+<section class="section" id="limits" aria-labelledby="limits-title">
+  <div class="wrap">
+    <p class="eyebrow reveal">Limits</p>
+    <h2 id="limits-title" class="section-title reveal">Know exactly what it covers.</h2>
+    <p class="section-lede reveal">MailHush changes what is drawn on screen, not what the site knows. Check anything sensitive before you share it.</p>
+
+    <div class="cols">
+      <div class="col yes reveal">
+        <h3>Masks</h3>
+        <ul>{covers.map((c) => <li>{c}</li>)}</ul>
+      </div>
+      <div class="col no reveal">
+        <h3>Doesn't mask</h3>
+        <ul>{misses.map((c) => <li>{c}</li>)}</ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 48px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+  .col { padding: 26px 28px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); }
+  .col h3 { font-size: 22px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .col h3::before { content: ''; width: 10px; height: 10px; border-radius: 50%; }
+  .yes h3::before { background: var(--mint); }
+  .no h3::before { background: var(--red); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { padding: 11px 0 11px 26px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 15px; position: relative; }
+  li::before { position: absolute; left: 0; top: 11px; font: 600 14px/1.6 var(--mono); }
+  .yes li::before { content: '✓'; color: var(--mint); }
+  .no li::before { content: '×'; color: var(--red); }
+</style>
