@@ -1,10 +1,10 @@
 {
   "name": "mailhush",
   "displayName": "MailHush",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
   "packageManager": "bun@1.2.9",
-  "description": "Replace chosen email addresses with custom phrases on any website without breaking page styling.",
+  "description": "Mask emails, phone numbers, card numbers, API keys, and other personal data on any website before you share your screen.",
   "author": "OpenAI Codex",
   "scripts": {
     "dev": "plasmo dev",
@@ -14,7 +14,7 @@
     "build:firefox-mv3": "plasmo build --target=firefox-mv3 && node scripts/fix-run-at.js",
     "package": "mkdir -p build && node scripts/fix-run-at.js && plasmo package",
     "package:firefox": "mkdir -p build && node scripts/fix-run-at.js && plasmo package --target=firefox-mv2",
-    "package:source": "mkdir -p build && git archive --format=zip --output=build/mailhush-source-$(node -p \"require('./package.json').version\").zip HEAD -- .gitignore BUILD_INSTRUCTIONS.md README.md assets background.ts bun.lock package.json scripts/fix-run-at.js src tests tsconfig.json",
+    "package:source": "mkdir -p build && git archive --format=zip --output=build/mailhush-source-$(node -p \"require('./package.json').version\").zip HEAD -- .gitignore BUILD_INSTRUCTIONS.md README.md assets bun.lock package.json scripts/fix-run-at.js src tests tsconfig.json",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
@@ -39,8 +39,8 @@
   },
   "manifest": {
     "name": "MailHush",
-    "description": "Swap configured email addresses with your own phrases while keeping each site's styling intact.",
-    "version": "1.2.0",
+    "description": "Mask emails, phone numbers, cards, IBANs, API keys, and your own patterns on any page while keeping its styling intact.",
+    "version": "2.0.0",
     "permissions": [
       "storage"
     ],

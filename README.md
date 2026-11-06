@@ -1,6 +1,14 @@
 # MailHush
 
-Email addresses exposed in web applications can accidentally appear in screenshots, streams, and screen shares. MailHush is a browser extension that replaces configured addresses—and, optionally, other email-like text—in the rendered page DOM while preserving surrounding styling.
+Email addresses, phone numbers, card numbers, and API keys exposed in web applications can accidentally appear in screenshots, streams, and screen shares. MailHush is a browser extension that masks them in the rendered page DOM while preserving surrounding styling.
+
+## What it masks
+
+- **Built-in detectors:** email addresses, API keys and tokens (AWS, GitHub, GitLab, Stripe, Slack, OpenAI, Anthropic, Google, JWTs, private keys), IBANs (mod-97 checked), card numbers (Luhn checked), US SSNs, Polish PESEL numbers (checksum checked), IPv4 and IPv6 addresses, MAC addresses, crypto wallets, and phone numbers. Emails, keys, IBANs, and cards are on by default; the rest can be turned on in settings.
+- **Custom rules:** exact text or regular expressions, case-sensitive or not, with a fixed replacement or `$1`-style capture groups.
+- **Where:** page text, open shadow DOM, iframes, the tab title, tooltips and other text attributes, and form fields until you focus them. Forms you submit with a button or Enter still send what you typed; pages that submit forms from script may send the masked text.
+- **How:** a label such as `[email]`, dots that keep the original shape (`••••-••••`), or a partial mask that keeps a recognisable part (`•••• 1111`), set globally or per detector.
+- **Where not:** skip individual sites from the popup or the settings page. Settings can be exported and imported as JSON.
 
 ![MailHush replacing an address in rendered page content](website/why/public/assets/demo.gif)
 

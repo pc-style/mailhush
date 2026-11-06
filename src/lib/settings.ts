@@ -1,87 +1,188 @@
 import { Storage } from "@plasmohq/storage"
 
-export interface EmailRule {
+import { detectors, type DetectorId } from "./detectors"
+
+export type MaskStyle = "label" | "dots" | "partial"
+
+export const maskStyles: { id: MaskStyle; name: string }[] = [
+  { id: "label", name: "Label" },
+  { id: "dots", name: "Dots" },
+  { id: "partial", name: "Partial" }
+]
+
+export interface DetectorSettings {
+  enabled: boolean
+  // "default" follows the global mask style.
+  style: MaskStyle | "default"
+  label: string
+}
+
+export interface CustomRule {
   id: string
-  email: string
+  pattern: string
+  // Empty replacement uses the global mask style.
   replacement: string
+  regex: boolean
+  caseSensitive: boolean
   enabled: boolean
 }
 
 export interface ExtensionSettings {
   enabled: boolean
-  maskAllEmails: boolean
-  blurMaskInputs: boolean
-  rules: EmailRule[]
+  maskStyle: MaskStyle
+  detectors: Record<DetectorId, DetectorSettings>
+  rules: CustomRule[]
+  maskInputs: boolean
+  maskAttributes: boolean
+  maskTitle: boolean
+  excludedSites: string[]
 }
 
-const storage = new Storage()
+// Settings are written on every edit, which would exceed storage.sync's
+// write quota, so they live in local storage. Version 1 used sync.
+const storage = new Storage({ area: "local" })
+const legacyStorage = new Storage({ area: "sync" })
 
 export const settingsKey = "mailhush-settings"
 
+const defaultDetectors = () =>
+  Object.fromEntries(
+    detectors.map((detector) => [
+      detector.id,
+      { enabled: detector.defaultEnabled, style: "default", label: detector.label }
+    ])
+  ) as Record<DetectorId, DetectorSettings>
+
 export const defaultSettings: ExtensionSettings = {
   enabled: true,
-  maskAllEmails: true,
-  blurMaskInputs: true,
+  maskStyle: "label",
+  detectors: defaultDetectors(),
   rules: [
     {
       id: "default-rule",
-      email: "hello@example.com",
+      pattern: "hello@example.com",
       replacement: "that's my fucking email",
+      regex: false,
+      caseSensitive: false,
       enabled: true
     }
-  ]
+  ],
+  maskInputs: true,
+  maskAttributes: true,
+  maskTitle: true,
+  excludedSites: []
 }
 
-const normalizeRule = (rule: Partial<EmailRule> | null | undefined): EmailRule | null => {
-  const email =
-    typeof rule?.email === "string" ? rule.email.trim().toLowerCase() : ""
-  const replacement =
-    typeof rule?.replacement === "string" ? rule.replacement.trim() : ""
+const isMaskStyle = (value: unknown): value is MaskStyle =>
+  maskStyles.some((style) => style.id === value)
 
-  if (!email || !replacement) {
-    return null
-  }
+const text = (value: unknown) => (typeof value === "string" ? value : "")
+
+type StoredRule = Partial<CustomRule> & { email?: unknown }
+
+const normalizeRule = (rule: StoredRule | null | undefined): CustomRule | null => {
+  if (!rule || typeof rule !== "object") return null
+
+  // Version 1 stored literal email addresses in `email`.
+  const legacy = typeof rule.email === "string" && rule.pattern === undefined
+  const pattern = legacy ? text(rule.email).trim().toLowerCase() : text(rule.pattern)
 
   return {
-    id:
-      typeof rule?.id === "string" && rule.id.trim().length > 0
-        ? rule.id
-        : crypto.randomUUID(),
-    email,
-    replacement,
-    enabled: rule?.enabled !== false
+    id: text(rule.id).trim() || crypto.randomUUID(),
+    // Surrounding spaces are meaningful: " Ann " should not match "Annette".
+    pattern,
+    replacement: legacy ? text(rule.replacement).trim() : text(rule.replacement),
+    regex: rule.regex === true,
+    caseSensitive: rule.caseSensitive === true,
+    enabled: rule.enabled !== false
   }
 }
 
-export const normalizeSettings = (
-  input?: Partial<ExtensionSettings> | null
-): ExtensionSettings => {
-  const rules = Array.isArray(input?.rules)
-    ? input.rules
-        .map((rule) => normalizeRule(rule))
-        .filter((rule): rule is EmailRule => rule !== null)
+/** Accepts a hostname or URL and returns the bare hostname, or "". */
+export const normalizeSite = (value: string) => {
+  const trimmed = value.trim().toLowerCase()
+  if (!trimmed) return ""
+  try {
+    const host = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`).hostname
+    return host.replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+}
+
+export const isSiteExcluded = (hostname: string, excludedSites: string[]) => {
+  const host = hostname.toLowerCase()
+  return excludedSites.some((site) => host === site || host.endsWith(`.${site}`))
+}
+
+type StoredSettings = Partial<Omit<ExtensionSettings, "detectors" | "rules">> & {
+  detectors?: Partial<Record<DetectorId, Partial<DetectorSettings>>>
+  rules?: StoredRule[]
+  // Version 1 fields.
+  maskAllEmails?: boolean
+  blurMaskInputs?: boolean
+}
+
+export const normalizeSettings = (input?: StoredSettings | null): ExtensionSettings => {
+  const stored = input && typeof input === "object" ? input : {}
+  const storedDetectors = stored.detectors && typeof stored.detectors === "object" ? stored.detectors : {}
+
+  const detectorSettings = Object.fromEntries(
+    detectors.map((detector) => {
+      const saved = storedDetectors[detector.id] ?? {}
+      const legacyEnabled = detector.id === "email" ? stored.maskAllEmails : undefined
+      const enabled =
+        typeof saved.enabled === "boolean"
+          ? saved.enabled
+          : typeof legacyEnabled === "boolean"
+            ? legacyEnabled
+            : detector.defaultEnabled
+
+      return [
+        detector.id,
+        {
+          enabled,
+          style: isMaskStyle(saved.style) ? saved.style : "default",
+          label: text(saved.label).trim() || detector.label
+        }
+      ]
+    })
+  ) as Record<DetectorId, DetectorSettings>
+
+  const rules = Array.isArray(stored.rules)
+    ? stored.rules.map(normalizeRule).filter((rule): rule is CustomRule => rule !== null)
     : defaultSettings.rules
 
+  const excludedSites = Array.isArray(stored.excludedSites)
+    ? [...new Set(stored.excludedSites.map((site) => normalizeSite(text(site))).filter(Boolean))]
+    : []
+
   return {
-    enabled: input?.enabled !== false,
-    maskAllEmails: input?.maskAllEmails !== false,
-    blurMaskInputs: input?.blurMaskInputs !== false,
-    rules
+    enabled: stored.enabled !== false,
+    maskStyle: isMaskStyle(stored.maskStyle) ? stored.maskStyle : defaultSettings.maskStyle,
+    detectors: detectorSettings,
+    rules,
+    maskInputs: (stored.maskInputs ?? stored.blurMaskInputs) !== false,
+    maskAttributes: stored.maskAttributes !== false,
+    maskTitle: stored.maskTitle !== false,
+    excludedSites
   }
 }
 
 export const readSettings = async (): Promise<ExtensionSettings> => {
-  const stored = await storage.get(settingsKey)
-  return normalizeSettings(stored as Partial<ExtensionSettings> | null | undefined)
+  const stored = (await storage.get(settingsKey)) ?? (await legacyStorage.get(settingsKey))
+  return normalizeSettings(stored as StoredSettings | null | undefined)
 }
 
 export const writeSettings = async (settings: ExtensionSettings) => {
   await storage.set(settingsKey, normalizeSettings(settings))
 }
 
-export const createEmptyRule = (): EmailRule => ({
+export const createEmptyRule = (): CustomRule => ({
   id: crypto.randomUUID(),
-  email: "",
+  pattern: "",
   replacement: "",
+  regex: false,
+  caseSensitive: false,
   enabled: true
 })

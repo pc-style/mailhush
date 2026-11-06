@@ -14,3 +14,15 @@ time bun install --frozen-lockfile
 
 echo "Installing website dependencies"
 time npm --prefix website/why ci --no-audit --no-fund
+
+echo "Installing fonts and Xvfb for extension UI captures"
+sudo -n apt-get install -y --no-install-recommends fontconfig xvfb fonts-inter fonts-jetbrains-mono fonts-noto-core >/dev/null
+if ! fc-list | grep "Cascadia Code" >/dev/null; then
+  tmp="$(mktemp -d)"
+  curl -fsSL -o "$tmp/c.zip" https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip
+  unzip -qo "$tmp/c.zip" -d "$tmp/c"
+  sudo -n mkdir -p /usr/local/share/fonts/cascadia
+  sudo -n cp "$tmp"/c/ttf/*.ttf /usr/local/share/fonts/cascadia/
+  rm -rf "$tmp"
+fi
+fc-cache -f >/dev/null
