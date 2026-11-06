@@ -11,6 +11,11 @@
  * This script rewrites every built manifest so all content scripts run at
  * `document_start`. It runs after `plasmo build`/`plasmo package` and is a
  * no-op if the build directory does not exist.
+ *
+ * It also moves src/page-hooks.ts into the page's JavaScript world. Plasmo's
+ * manifest schema rejects the `world` key, and Plasmo's own main-world support
+ * registers scripts at runtime through `chrome.scripting`, which returns no
+ * promise in Firefox's MV2 `chrome` namespace and so never registers there.
  */
 const { readFileSync, writeFileSync, existsSync, readdirSync } = require("fs")
 const { join } = require("path")
@@ -30,11 +35,15 @@ function patchManifest(manifestPath) {
       cs.run_at = RUN_AT
       changed = true
     }
+    if (cs.js?.some((file) => file.startsWith("page-hooks.")) && cs.world !== "MAIN") {
+      cs.world = "MAIN"
+      changed = true
+    }
   }
 
   if (changed) {
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n")
-    console.log(`[fix-run-at] patched run_at -> ${RUN_AT}: ${manifestPath}`)
+    console.log(`[fix-run-at] patched content scripts: ${manifestPath}`)
   }
   return changed
 }

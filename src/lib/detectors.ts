@@ -134,7 +134,13 @@ const acceptPesel = (match: string) => {
 }
 
 const acceptIpv6 = (match: string) => {
-  const halves = match.split("::")
+  // An embedded IPv4 address (::ffff:192.0.2.1) takes the place of two groups.
+  const embedded = /:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(match)
+  if (embedded && embedded[1].split(".").some((octet) => Number(octet) > 255)) return 0
+  const address = embedded ? match.slice(0, embedded.index + 1) + "0:0" : match
+  if (!embedded && match.includes(".")) return 0
+
+  const halves = address.split("::")
   if (halves.length > 2) return 0
   const groups = halves.flatMap((half) => (half ? half.split(":") : []))
   if (groups.length === 0 || groups.some((group) => !/^[0-9a-f]{1,4}$/i.test(group))) return 0
@@ -254,6 +260,21 @@ export const detectors: Detector[] = [
     accept: acceptPesel,
     partial: (match) => keepLast(match, 3)
   },
+  // Before IPv4, so an IPv4-mapped IPv6 address is masked whole.
+  {
+    id: "ipv6",
+    name: "IPv6 addresses",
+    description: "Full and compressed IPv6 addresses.",
+    example: "2001:db8:85a3::8a2e:370:7334",
+    label: "[IPv6]",
+    defaultEnabled: false,
+    minLength: 6,
+    needs: ":",
+    hint: /[0-9a-f]:[0-9a-f:]/i,
+    pattern: /(?<![\w:.])[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}(?:\.\d{1,3}){0,3}(?![\w:]|\.\d)/gi,
+    accept: acceptIpv6,
+    partial: (match) => keepLast(match, 4)
+  },
   {
     id: "ipv4",
     name: "IPv4 addresses",
@@ -268,20 +289,6 @@ export const detectors: Detector[] = [
     pattern:
       /(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?!\.?\d)/g,
     partial: (match) => match.replace(/\.\d+\.\d+$/, (tail) => tail.replace(/\d/g, BULLET))
-  },
-  {
-    id: "ipv6",
-    name: "IPv6 addresses",
-    description: "Full and compressed IPv6 addresses.",
-    example: "2001:db8:85a3::8a2e:370:7334",
-    label: "[IPv6]",
-    defaultEnabled: false,
-    minLength: 6,
-    needs: ":",
-    hint: /[0-9a-f]:[0-9a-f:]/i,
-    pattern: /(?<![\w:.])[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}(?![\w:])/gi,
-    accept: acceptIpv6,
-    partial: (match) => keepLast(match, 4)
   },
   {
     id: "mac",

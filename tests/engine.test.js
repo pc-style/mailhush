@@ -35,6 +35,8 @@ describe("detectors", () => {
     ["host 192.168.10.254:8080", "host [IP]:8080"],
     ["addr 2001:db8:85a3::8a2e:370:7334 up", "addr [IPv6] up"],
     ["full fe80:0:0:0:202:b3ff:fe1e:8329", "full [IPv6]"],
+    ["mapped ::ffff:192.0.2.128 here", "mapped [IPv6] here"],
+    ["nat64 64:ff9b::192.0.2.33", "nat64 [IPv6]"],
     ["nic 00:1A:2B:3C:4D:5E", "nic [MAC]"],
     ["token ghp_1A2b3C4d5E6f7G8h9I0jKlMnOpQrStUvWxYz end", "token [secret] end"],
     ["key AKIAIOSFODNN7EXAMPLE", "key [secret]"],
@@ -56,10 +58,15 @@ describe("detectors", () => {
     "Released 2024-01-15 and 15.10.2024",
     "Version 1.2.3.4.5 and 999.1.1.1",
     "Meet at 10:30:00 and use std::vector",
+    "Bad mapped ::ffff:192.0.2.300",
     "Order 000-12-3456 is not an SSN",
     "Plain text with numbers 42 and 1999"
   ])("leaves %p alone", (input) => {
     expect(all.mask(input)).toBe(input)
+  })
+
+  test("IPv6 alone masks the whole IPv4-mapped address", () => {
+    expect(only(["ipv6"]).mask("from ::ffff:192.0.2.128.")).toBe("from [IPv6].")
   })
 
   test("disabled detectors do not mask", () => {

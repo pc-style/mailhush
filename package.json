@@ -56,6 +56,15 @@
     "host_permissions": [
       "<all_urls>"
     ],
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["../src/page-hooks.ts"],
+        "run_at": "document_start",
+        "all_frames": true,
+        "match_about_blank": true
+      }
+    ],
     "browser_specific_settings": {
       "gecko": {
         "id": "mailhush@pc-style.github.io",
