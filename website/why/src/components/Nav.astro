@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+---
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="MailHush home">
+      <Image src={logo} alt="" width={30} height={30} loading="eager" />
+      <span>MailHush</span>
+      <span class="version">2.0</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#try">Try it</a>
+      <a href="#hides">What it hides</a>
+      <a href="#customize">Customize</a>
+      <a href="#limits">Limits</a>
+    </nav>
+    <button class="btn btn-primary nav-cta open-download-modal">Get MailHush</button>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+  :global(body.scrolled) .nav { border-bottom-color: var(--line); }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 68px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 700 18px/1 var(--display); letter-spacing: -0.02em; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .version { font: 500 11px/1 var(--mono); color: var(--mint); background: var(--mint-soft); padding: 4px 6px; border-radius: 5px; letter-spacing: 0.02em; }
+  nav { display: flex; gap: 4px; margin-left: auto; }
+  nav a { padding: 8px 12px; border-radius: 8px; color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s, background 0.2s; }
+  nav a:hover { color: var(--text); background: var(--well); }
+  .nav-cta { height: 38px; padding: 0 16px; font-size: 14px; }
+  @media (max-width: 820px) {
+    nav { display: none; }
+    .nav-cta { margin-left: auto; }
+  }
+</style>

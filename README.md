@@ -10,7 +10,7 @@ Email addresses, phone numbers, card numbers, and API keys exposed in web applic
 - **How:** a label such as `[email]`, dots that keep the original shape (`••••-••••`), or a partial mask that keeps a recognisable part (`•••• 1111`), set globally or per detector.
 - **Where not:** skip individual sites from the popup or the settings page. Settings can be exported and imported as JSON.
 
-![MailHush replacing an address in rendered page content](website/why/public/assets/demo.gif)
+![MailHush 2.0 masking an account page in label, partial, and dots styles](website/why/public/assets/demo.gif)
 
 **Status:** Published on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/mailhush/) and packaged for Chromium and Firefox in [GitHub Releases](https://github.com/pc-style/mailhush/releases/latest). The Chrome Web Store listing is not available. No support or maintenance commitment is promised.
 

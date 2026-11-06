@@ -4,10 +4,27 @@ import logo from '../assets/logo.png';
 ---
 
 <footer class="footer">
-  <a class="footer-brand" href="https://github.com/pc-style/mailhush">
-    <Image src={logo} alt="" width={28} height={28} aria-hidden="true" />
-    <span>MailHush</span>
-  </a><br />
-  extension processing runs locally &middot; this website uses Vercel Analytics<br />
-  <a href="https://github.com/pc-style/mailhush#trust-and-privacy-boundary">privacy and trust boundary</a>
+  <div class="wrap inner">
+    <a class="brand" href="https://github.com/pc-style/mailhush">
+      <Image src={logo} alt="" width={26} height={26} />
+      MailHush
+    </a>
+    <p>The extension makes no network requests. This website uses Vercel Analytics.</p>
+    <nav aria-label="Footer">
+      <a href="https://github.com/pc-style/mailhush">Source</a>
+      <a href="https://github.com/pc-style/mailhush#trust-and-privacy-boundary">Privacy boundary</a>
+      <a href="https://github.com/pc-style/mailhush/releases">Releases</a>
+    </nav>
+  </div>
 </footer>
+
+<style>
+  .footer { margin-top: 120px; border-top: 1px solid var(--line); padding: 32px 0 40px; font-size: 14px; color: var(--text-3); }
+  .inner { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font: 700 16px/1 var(--display); }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  nav { display: flex; gap: 18px; margin-left: auto; }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--mint); }
+  @media (max-width: 700px) { nav { margin-left: 0; } }
+</style>
