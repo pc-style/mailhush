@@ -17,4 +17,15 @@ browserApi.commands.onCommand.addListener(async (command) => {
   })
 })
 
+// Frames in Firefox before 148 cannot read the top-level origin themselves;
+// they need it to honour skipped sites.
+browserApi.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== "mailhush:top-host") return
+  try {
+    sendResponse(new URL(sender.tab?.url ?? "").hostname)
+  } catch {
+    sendResponse("")
+  }
+})
+
 export {}

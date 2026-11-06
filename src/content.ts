@@ -37,6 +37,11 @@ const veilId = "mailhush-startup-veil"
 let settings: ExtensionSettings = defaultSettings
 let masker: Masker = { mask: (text) => text }
 let active = false
+// Set once anything on the page is masked; paused pages that never masked
+// anything keep no observer at all.
+let maskedAnything = false
+// Hostname of the top-level page, for frames in browsers without ancestorOrigins.
+let topHost = ""
 
 const maskedText = new WeakMap<Text, Masked>()
 const maskedControls = new WeakMap<Control, Masked>()
@@ -53,6 +58,7 @@ const browserApi = (globalThis as typeof globalThis & { browser?: typeof chrome 
 const nextValue = (record: Masked | undefined | null, current: string, enabled: boolean) => {
   const original = record && record.applied === current ? record.original : current
   const masked = enabled ? masker.mask(original) : original
+  if (masked !== original) maskedAnything = true
   return { original, masked }
 }
 
@@ -183,8 +189,6 @@ const scan = (root: Node) => {
       if (element.shadowRoot) {
         observeRoot(element.shadowRoot)
         scan(element.shadowRoot)
-      } else if (tag.includes("-")) {
-        watchHost(element)
       }
 
       // Compare tag names first; instanceof checks on every element are slow.
@@ -259,41 +263,9 @@ function observeRoot(root: ShadowRoot) {
   if (shadowRoots.has(root)) return
   shadowRoots.add(root)
   if (active) observer.observe(root, observerOptions)
-  // Focus moves inside one shadow root never reach the document.
-  root.addEventListener("focusin", handleFocusIn as EventListener, true)
-  root.addEventListener("focusout", handleFocusOut as EventListener, true)
-}
-
-// Custom elements often upgrade, and attach their shadow root, after the
-// parser inserted them. Attaching a root causes no mutation, and content
-// scripts cannot hook attachShadow, so recheck new custom elements briefly.
-const pendingHosts = new Map<Element, number>()
-let hostTimer = 0
-
-function watchHost(element: Element) {
-  if (pendingHosts.has(element)) return
-  pendingHosts.set(element, 0)
-  if (!hostTimer) hostTimer = window.setInterval(checkHosts, 500)
-}
-
-function checkHosts() {
-  for (const [element, checks] of pendingHosts) {
-    if (element.shadowRoot) {
-      pendingHosts.delete(element)
-      if (active && element.isConnected) {
-        observeRoot(element.shadowRoot)
-        scan(element.shadowRoot)
-      }
-    } else if (checks >= 20 || !element.isConnected) {
-      pendingHosts.delete(element)
-    } else {
-      pendingHosts.set(element, checks + 1)
-    }
-  }
-  if (pendingHosts.size === 0) {
-    clearInterval(hostTimer)
-    hostTimer = 0
-  }
+  // Focus moves and resets inside a shadow root never reach the document,
+  // and nothing reaches it once the host is detached.
+  for (const [type, listener] of rootListeners) root.addEventListener(type, listener, true)
 }
 
 // --- Focus and forms --------------------------------------------------------
@@ -336,17 +308,22 @@ const handleInput = (event: Event) => {
 // Forms must validate and submit what the user typed, not the masked text.
 // Validation runs before the submit event, so unmask when the user starts a
 // submission (a submit button click or Enter in a field), then mask again.
-const unmaskForm = (form: HTMLFormElement | null) => {
+// form.elements includes controls outside the form that use form="id".
+const remaskForm = (form: HTMLFormElement) => {
+  for (const element of form.elements) {
+    if (element.isConnected && isMaskableControl(element)) processControl(element)
+  }
+}
+
+// `later` must run after the browser's default action for user submissions,
+// so those remask in a new task; script calls remask in a microtask, which
+// runs once the page's code returns and before anything paints.
+const unmaskForm = (form: HTMLFormElement | null, later = (task: () => void) => void setTimeout(task)) => {
   if (!form) return
   for (const element of form.elements) {
     if (isMaskableControl(element)) unmaskControl(element)
   }
-  // form.elements includes controls outside the form that use form="id".
-  setTimeout(() => {
-    for (const element of form.elements) {
-      if (element.isConnected && isMaskableControl(element)) processControl(element)
-    }
-  })
+  later(() => remaskForm(form))
 }
 
 const handleSubmit = (event: Event) => {
@@ -365,10 +342,74 @@ const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === "Enter" && target instanceof HTMLInputElement) unmaskForm(target.form)
 }
 
+// Reset fires before the fields change.
+const handleReset = (event: Event) => {
+  const form = event.target
+  if (form instanceof HTMLFormElement) setTimeout(() => remaskForm(form))
+}
+
+// --- Signals from the page world (src/page-hooks.ts) ---------------
+
+// event.target is the shadow host when the form is inside a shadow root.
+const handleFormSignal = (event: Event) => {
+  const form = event.composedPath()[0]
+  if (form instanceof HTMLFormElement) unmaskForm(form, queueMicrotask)
+}
+
+const handleValueSignal = (event: Event) => {
+  const target = event.composedPath()[0]
+  if (target instanceof Element && isMaskableControl(target)) processControl(target)
+}
+
+const handleShadowSignal = (event: Event) => {
+  const host = event.composedPath()[0]
+  if (!active || !(host instanceof Element) || !host.shadowRoot) return
+  observeRoot(host.shadowRoot)
+  scan(host.shadowRoot)
+}
+
 // --- Lifecycle --------------------------------------------------------------
 
+// Signals are composed, so one from an attached shadow root reaches both its
+// root's listener and the document's; handle each event once.
+const handledSignals = new WeakSet<Event>()
+const once = (listener: (event: Event) => void) => (event: Event) => {
+  if (handledSignals.has(event)) return
+  handledSignals.add(event)
+  listener(event)
+}
+
+const signalListeners: [string, EventListener][] = [
+  ["mailhush:form", once(handleFormSignal)],
+  ["mailhush:value", once(handleValueSignal)],
+  ["mailhush:shadow", once(handleShadowSignal)]
+]
+
+const rootListeners: [string, EventListener][] = [
+  ["focusin", handleFocusIn as EventListener],
+  ["focusout", handleFocusOut as EventListener],
+  ["reset", handleReset],
+  ...signalListeners
+]
+
+// The top-level host for frames that cannot read it: Firefox before 148 has
+// no location.ancestorOrigins, and a referrer policy can redact it to "null".
+// If the background never answers, the frame masks, which is the safe side.
+const lookupTopHost = async () => {
+  const ancestors = location.ancestorOrigins
+  if (window === window.top || (ancestors?.length && ancestors[ancestors.length - 1] !== "null")) return ""
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return (await browserApi.runtime.sendMessage({ type: "mailhush:top-host" })) ?? ""
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+  }
+  return ""
+}
+
 const isPageExcluded = () => {
-  const hosts = [location.hostname]
+  const hosts = [location.hostname, topHost]
   const ancestors = location.ancestorOrigins
   if (ancestors?.length) {
     try {
@@ -377,7 +418,12 @@ const isPageExcluded = () => {
       // Opaque origins have no hostname.
     }
   }
-  return hosts.some((host) => isSiteExcluded(host, settings.excludedSites))
+  return hosts.some((host) => host && isSiteExcluded(host, settings.excludedSites))
+}
+
+const observeAll = (options: MutationObserverInit) => {
+  observer.observe(document, options)
+  for (const root of shadowRoots) observer.observe(root, options)
 }
 
 const apply = (next: ExtensionSettings) => {
@@ -388,18 +434,19 @@ const apply = (next: ExtensionSettings) => {
   if (shouldRun) {
     if (!active) {
       active = true
-      observer.observe(document, observerOptions)
-      for (const root of shadowRoots) observer.observe(root, observerOptions)
+      observeAll(observerOptions)
     }
     scanEverything()
     return
   }
 
-  // Restore everything once, then stop observing so the page pays nothing.
+  // Restore everything once. Masked nodes the page detached earlier can come
+  // back later, so pages that had masked text keep watching insertions.
   if (active) {
     active = false
     observer.disconnect()
     scanEverything()
+    if (maskedAnything) observeAll({ childList: true, subtree: true })
   }
 }
 
@@ -412,6 +459,8 @@ if (document instanceof HTMLDocument && !document.getElementById(veilId)) {
 }
 
 const bootstrap = async () => {
+  topHost = await lookupTopHost()
+
   try {
     apply(await readSettings())
   } catch {
@@ -426,6 +475,8 @@ const bootstrap = async () => {
   document.addEventListener("submit", handleSubmit, true)
   document.addEventListener("click", handleClick, true)
   document.addEventListener("keydown", handleKeyDown, true)
+  document.addEventListener("reset", handleReset, true)
+  for (const [type, listener] of signalListeners) document.addEventListener(type, listener, true)
 
   // Settings save on every keystroke; rescan once typing pauses.
   let reload = 0
