@@ -47,7 +47,7 @@ const words = [
 </section>
 
 <style>
-  .hero { position: relative; padding: 72px 0 0; isolation: isolate; }
+  .hero { position: relative; padding: 72px 0 0; }
   h1 { font-size: clamp(46px, 8.6vw, 112px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 800; }
 
   /* A redaction bar sweeps over the word, shows its label, then pulls back. */
@@ -55,7 +55,7 @@ const words = [
   .word { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.5); text-decoration-thickness: 0.045em; text-underline-offset: 0.12em; }
   .bar {
     position: absolute;
-    inset: 0.02em -0.06em -0.02em;
+    inset: 0.02em -0.06em -0.1em;
     display: grid;
     place-items: center;
     background: var(--mint);
