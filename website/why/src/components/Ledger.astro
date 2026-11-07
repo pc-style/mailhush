@@ -14,8 +14,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 <section class="section" id="hides" aria-labelledby="hides-title">
   <div class="wrap">
     <header class="section-head">
-      <p class="eyebrow reveal">What it hides</p>
-      <h2 id="hides-title" class="section-title reveal">Eleven detectors. Checksums, not guesses.</h2>
+      <h2 id="hides-title" class="section-title reveal">What it catches</h2>
       <p class="section-lede reveal">
         Card numbers must pass Luhn, IBANs mod-97, and PESEL its checksum and a real birth date, so order IDs and
         version numbers stay readable. {onCount} detectors are on out of the box; switch on the rest in settings.
@@ -57,7 +56,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 <style>
   .ledger { margin-top: 48px; border-top: 1px solid var(--line-2); }
   .lrow { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 0.5fr) minmax(0, 1.25fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
-  .lrow:not(.head):hover { background: linear-gradient(90deg, transparent, var(--bg-2) 20%, var(--bg-2) 80%, transparent); }
+  .lrow:not(.head):hover { background: var(--bg-2); }
   .head { font: 500 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 14px 4px; }
   .name strong { font-weight: 600; font-size: 16px; }
   .name em { font: 500 10px/1 var(--mono); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mint); margin-left: 10px; vertical-align: 2px; }

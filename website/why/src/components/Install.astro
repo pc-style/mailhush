@@ -8,8 +8,7 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
   <div class="wrap">
     <div class="panel reveal">
       <div class="copy">
-        <p class="eyebrow">Install</p>
-        <h2 id="install-title" class="section-title">Hide it before you hit share.</h2>
+        <h2 id="install-title" class="section-title">Install MailHush</h2>
         <p class="section-lede">Free. Runs entirely in your browser. The source is public on GitHub.</p>
       </div>
       <div class="options">
@@ -40,15 +39,13 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
     align-items: center;
     padding: 56px;
     border-radius: 24px;
-    background:
-      radial-gradient(120% 140% at 0% 0%, rgba(143, 214, 180, 0.16), transparent 55%),
-      var(--card);
+    background: var(--card);
     box-shadow: 0 0 0 1px var(--line-2);
   }
   @media (max-width: 900px) { .panel { grid-template-columns: 1fr; padding: 32px 22px; gap: 32px; } }
   .options { display: grid; gap: 10px; }
   .opt { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: 14px; background: var(--bg-2); box-shadow: 0 0 0 1px var(--line); text-decoration: none; transition: transform 0.25s var(--ease), box-shadow 0.25s; }
-  a.opt:hover { transform: translateX(4px); box-shadow: 0 0 0 1px var(--mint); }
+  a.opt:hover { box-shadow: 0 0 0 1px var(--mint); }
   .ico { width: 30px; height: 30px; flex-shrink: 0; }
   .ico :global(svg) { width: 100%; height: 100%; }
   .t { display: flex; flex-direction: column; }

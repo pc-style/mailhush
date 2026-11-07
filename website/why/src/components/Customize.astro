@@ -16,8 +16,7 @@ const rule = mask('Ship ORD-991 to Acme Corp', {
 <section class="section" id="customize" aria-labelledby="customize-title">
   <div class="wrap">
     <header class="section-head">
-      <p class="eyebrow reveal">Customize</p>
-      <h2 id="customize-title" class="section-title reveal">Your rules. Your labels. Your call.</h2>
+      <h2 id="customize-title" class="section-title reveal">Make it fit how you work</h2>
     </header>
 
     <div class="bento">
@@ -76,7 +75,7 @@ const rule = mask('Ship ORD-991 to Acme Corp', {
   @media (max-width: 960px) { .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 620px) { .bento { grid-template-columns: 1fr; } }
   .tile { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); transition: transform 0.3s var(--ease), box-shadow 0.3s; }
-  .tile:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px var(--line-2), 0 20px 40px -24px rgba(0, 0, 0, 0.8); }
+  .tile:hover { box-shadow: 0 0 0 1px var(--line-2); }
   .tile.wide { grid-column: span 2; }
   @media (max-width: 620px) { .tile.wide { grid-column: auto; } }
   .tile h3 { font-size: 21px; letter-spacing: -0.02em; }

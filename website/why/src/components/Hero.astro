@@ -11,7 +11,7 @@ const words = [
 
 <section class="hero" id="top" aria-labelledby="hero-title">
   <div class="wrap hero-inner">
-    <p class="eyebrow reveal">Chromium · Firefox · Zen</p>
+    <p class="eyebrow reveal">A browser extension for Chromium, Firefox and Zen</p>
     <h1 id="hero-title" class="reveal">
       Share your screen.<br />
       Not your{' '}<span class="redact" aria-hidden="true" data-words={JSON.stringify(words)}><span class="word">{words[0].raw}</span><span class="bar"><span class="label">{words[0].masked}</span></span></span><span class="visually-hidden">data</span>.
@@ -26,22 +26,15 @@ const words = [
         <div class="actions">
           <button class="btn btn-primary open-download-modal">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" /></svg>
-            Get MailHush — free
+            Install MailHush
           </button>
-          <a class="btn btn-ghost" href="#try">Try it here first</a>
+          <a class="btn btn-ghost" href="#try">Try it on this page</a>
         </div>
-        <ul class="facts">
-          <li><strong>11</strong> detectors + your rules</li>
-          <li><strong>0</strong> network requests</li>
-          <li><strong>3</strong> mask styles</li>
-        </ul>
       </div>
 
       <figure class="screen reveal">
         <div class="chrome">
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="url">northwind.app/account</span>
-          <span class="live"><span></span>Live</span>
         </div>
         <video autoplay muted loop playsinline preload="metadata" poster="/assets/demo-poster.jpg" width="1200" height="750">
           <source src="/assets/demo.webm" type="video/webm" />
@@ -80,19 +73,11 @@ const words = [
   .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; margin-top: 56px; align-items: start; }
   @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
   .lede { font-size: 19px; line-height: 1.55; color: var(--text-2); max-width: 46ch; }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 30px 0 34px; }
-  .facts { list-style: none; margin: 0; padding: 22px 0 0; display: flex; gap: 30px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-3); }
-  .facts strong { display: block; font: 700 28px/1.1 var(--display); color: var(--text); letter-spacing: -0.03em; }
-  @media (max-width: 420px) { .facts { gap: 18px; } }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 
-  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 120px -40px rgba(143, 214, 180, 0.35); overflow: hidden; transition-delay: 0.15s; }
+  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8); overflow: hidden; transition-delay: 0.15s; }
   .chrome { display: flex; align-items: center; gap: 14px; padding: 11px 14px; background: var(--well); border-bottom: 1px solid var(--line); }
-  .dots { display: flex; gap: 6px; }
-  .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--well-2); }
   .url { flex: 1; font: 12px/1 var(--mono); color: var(--text-3); background: var(--bg-2); padding: 7px 10px; border-radius: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .live { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
-  .live span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s ease-in-out infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(242, 163, 163, 0.18); } }
   video { width: 100%; height: auto; aspect-ratio: 1200 / 750; background: #f6f7f9; }
   figcaption { padding: 12px 16px; font-size: 13px; color: var(--text-3); border-top: 1px solid var(--line); }
 </style>
