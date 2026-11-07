@@ -62,7 +62,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
   .name strong { font-weight: 600; font-size: 16px; }
   .name em { font: 500 10px/1 var(--mono); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mint); margin-left: 10px; vertical-align: 2px; }
   .name small { display: block; color: var(--text-3); font-size: 13px; line-height: 1.45; margin-top: 3px; }
-  .mono { font: 13px/1.5 var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mono { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
   .rawval { color: var(--red); }
   .partial { color: var(--text-2); }
   .own { border-bottom-style: dashed; }
@@ -72,6 +72,5 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
     .lrow { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
     .name { grid-column: 1 / -1; }
     .partial { display: none; }
-    .mono { white-space: normal; overflow-wrap: anywhere; }
   }
 </style>
