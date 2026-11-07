@@ -40,23 +40,23 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
 </dialog>
 
 <style>
-  .modal { margin: auto; background: transparent; border: none; padding: 0; color: var(--text); }
-  .modal::backdrop { background: rgba(10, 9, 8, 0.75); backdrop-filter: blur(6px); }
-  .modal-content { position: relative; width: min(92vw, 420px); padding: 30px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -20px rgba(0, 0, 0, 0.8); font-family: var(--body); }
-  .close-btn { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--well); color: var(--text-2); font-size: 20px; line-height: 1; cursor: pointer; }
-  .close-btn:hover { color: var(--text); background: var(--well-2); }
-  .modal-title { font: 700 30px/1 var(--display); letter-spacing: -0.03em; margin: 0 0 8px; }
-  .modal-desc { color: var(--text-2); font-size: 15px; margin: 0 0 22px; }
+  .modal { margin: auto; background: transparent; border: none; padding: 0; color: var(--ink); }
+  .modal::backdrop { background: rgba(22, 20, 15, 0.55); }
+  .modal-content { position: relative; width: min(92vw, 440px); padding: 30px; background: var(--sheet); border: 1.5px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); font-family: var(--body); }
+  .close-btn { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; }
+  .close-btn:hover { background: var(--ink); color: var(--paper); }
+  .modal-title { font: 600 34px/1 var(--display); letter-spacing: -0.02em; margin: 0 0 8px; }
+  .modal-desc { color: var(--ink-2); font-size: 17px; font-style: italic; margin: 0 0 22px; }
   .modal-options { display: grid; gap: 10px; }
-  .modal-btn { display: flex; align-items: center; gap: 16px; width: 100%; padding: 15px 16px; border: 0; border-radius: 14px; background: var(--bg-2); box-shadow: 0 0 0 1px var(--line); color: var(--text); text-align: left; text-decoration: none; cursor: pointer; font: inherit; transition: transform 0.2s var(--ease), box-shadow 0.2s; }
-  .modal-btn:hover:not(.disabled) { transform: translateX(4px); box-shadow: 0 0 0 1px var(--mint); }
-  .modal-btn.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+  .modal-btn { display: flex; align-items: center; gap: 16px; width: 100%; padding: 15px 16px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); text-align: left; text-decoration: none; cursor: pointer; font: inherit; transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease); }
+  .modal-btn:hover:not(.disabled) { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--stamp); }
+  .modal-btn.disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(1); }
   .icon-wrapper { width: 30px; height: 30px; flex-shrink: 0; }
   .icon-wrapper :global(svg) { width: 100%; height: 100%; }
   .btn-text { display: flex; flex-direction: column; }
-  .btn-name { font-weight: 600; font-size: 16px; }
-  .btn-status { font-size: 13px; color: var(--text-3); }
-  .available { color: var(--mint); }
+  .btn-name { font: 600 19px/1.2 var(--display); }
+  .btn-status { font: 12px/1.4 var(--mono); color: var(--ink-3); }
+  .available { color: var(--stamp); }
 </style>
 
 <script>
