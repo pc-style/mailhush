@@ -85,7 +85,7 @@
   dt { color: var(--ink-3); }
   dd { margin: 0; }
   .r { position: relative; color: var(--stamp); white-space: nowrap; }
-  .js .r::after { transform: scaleX(0); }
+  :global(.js) .r::after { transform: scaleX(0); }
   .r::after { content: ''; position: absolute; inset: 0.1em 0.1em 0.04em; background: var(--bar); transform-origin: left; transition: transform 0.45s var(--ease); }
   .memo.done .r { color: transparent; }
   .memo.done .r::after, .r.on::after { transform: scaleX(1); }
@@ -112,6 +112,7 @@
   const bars = [...memo.querySelectorAll<HTMLElement>('.r')];
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
     memo.classList.add('done');
+    document.querySelector<HTMLVideoElement>('.frame video')?.pause();
   } else {
     // Redact one value at a time, as MailHush would while the page renders.
     bars.forEach((bar, i) => setTimeout(() => bar.classList.add('on'), 1500 + i * 220));
