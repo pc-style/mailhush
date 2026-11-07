@@ -1,6 +1,4 @@
 ---
-import { mask } from '../lib/mask';
-
 // Words the headline cycles through, each with what MailHush shows instead.
 const words = [
   { raw: 'email', masked: '[email]' },
@@ -9,30 +7,9 @@ const words = [
   { raw: 'IBAN', masked: '[IBAN]' },
   { raw: 'phone', masked: '[phone]' },
 ];
-
-// A wall of plausible page text, masked by the real engine, as backdrop.
-const all = ['email', 'secret', 'iban', 'creditCard', 'phone', 'ipv4', 'ssn', 'mac', 'crypto'];
-const wallSource = [
-  'billing@northwind.io  ·  card 4111 1111 1111 1111  ·  exp 09/29',
-  'payout DE89 3704 0044 0532 0130 00  →  status: settled',
-  'SESSION=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLWRlbW8ifQ.ZGVtby1zaWduYXR1cmUtb25seQ',
-  'on-call: +48 601 234 567  ·  ops@acme-corp.com',
-  'last login 203.0.113.42  ·  device 00:1A:2B:3C:4D:5E',
-  'refund to 0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-  'ssn 123-45-6789  ·  verified',
-  'priya.n@acme-corp.com invited marcus.lee@acme-corp.com',
-];
-const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-const wall = wallSource.map((line) =>
-  escape(mask(line, { on: all })).replace(/\[[A-Za-z]+\]/g, (m) => `<b>${m}</b>`),
-);
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title">
-  <div class="wall" aria-hidden="true">
-    {[...wall, ...wall].map((line, i) => <p style={`--i:${i}`} set:html={line} />)}
-  </div>
-
   <div class="wrap hero-inner">
     <p class="eyebrow reveal">Chromium · Firefox · Zen</p>
     <h1 id="hero-title" class="reveal">
@@ -78,25 +55,6 @@ const wall = wallSource.map((line) =>
 
 <style>
   .hero { position: relative; padding: 72px 0 0; isolation: isolate; }
-  .wall {
-    position: absolute;
-    inset: -68px 0 auto;
-    height: 640px;
-    z-index: -1;
-    overflow: hidden;
-    padding-top: 30px;
-    font: 400 13px/2.3 var(--mono);
-    color: var(--text-3);
-    opacity: 0.32;
-    mask-image: radial-gradient(ellipse 70% 80% at 60% 20%, #000 10%, transparent 75%);
-    white-space: nowrap;
-  }
-  .wall p { transform: translateX(calc(var(--i) * -47px % 300px)); animation: drift 60s linear infinite; }
-  .wall p:nth-child(even) { animation-direction: reverse; }
-  .wall :global(b) { font-weight: 500; color: var(--mint); background: var(--mint-soft); padding: 1px 5px; border-radius: 4px; }
-  @media (max-width: 760px) { .wall { opacity: 0.16; } }
-  @keyframes drift { to { margin-left: -240px; } }
-
   h1 { font-size: clamp(46px, 8.6vw, 112px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 800; }
 
   /* A redaction bar sweeps over the word, shows its label, then pulls back. */
@@ -104,7 +62,7 @@ const wall = wallSource.map((line) =>
   .word { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.5); text-decoration-thickness: 0.045em; text-underline-offset: 0.12em; }
   .bar {
     position: absolute;
-    inset: 0.02em -0.08em -0.18em;
+    inset: 0.1em -0.06em -0.02em;
     display: grid;
     place-items: center;
     background: var(--mint);
@@ -113,6 +71,8 @@ const wall = wallSource.map((line) =>
     transition: clip-path 0.55s var(--ease);
   }
   .redact.covered .bar { clip-path: inset(0 0 0 0); }
+  .word { transition: text-decoration-color 0.3s; }
+  .redact.covered .word { text-decoration-color: transparent; }
   .redact.leaving .bar { clip-path: inset(0 0 0 100%); }
   .label { font: 600 0.3em/1 var(--mono); letter-spacing: 0; color: var(--mint-ink); opacity: 0; transition: opacity 0.3s 0.25s; }
   .redact.covered .label { opacity: 1; }
@@ -125,7 +85,7 @@ const wall = wallSource.map((line) =>
   .facts strong { display: block; font: 700 28px/1.1 var(--display); color: var(--text); letter-spacing: -0.03em; }
   @media (max-width: 420px) { .facts { gap: 18px; } }
 
-  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 120px -40px rgba(143, 214, 180, 0.35); overflow: hidden; transform: rotate(0.6deg); transition-delay: 0.15s; }
+  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 120px -40px rgba(143, 214, 180, 0.35); overflow: hidden; transition-delay: 0.15s; }
   .chrome { display: flex; align-items: center; gap: 14px; padding: 11px 14px; background: var(--well); border-bottom: 1px solid var(--line); }
   .dots { display: flex; gap: 6px; }
   .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--well-2); }

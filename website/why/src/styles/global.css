@@ -69,6 +69,10 @@ code, kbd { font-family: var(--mono); font-size: 0.88em; }
   margin-bottom: 18px;
 }
 .eyebrow::before { content: ''; width: 18px; height: 1px; background: currentColor; }
+.section-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-items: end; }
+.section-head .eyebrow { grid-column: 1 / -1; justify-self: start; }
+.section-head .section-lede { margin-top: 0; padding-bottom: 6px; }
+@media (max-width: 860px) { .section-head { display: block; } .section-head .section-lede { margin-top: 18px; padding-bottom: 0; } }
 .section-title { font-size: clamp(34px, 5vw, 58px); line-height: 1.02; max-width: 16ch; }
 .section-lede { color: var(--text-2); font-size: 18px; max-width: 58ch; margin-top: 18px; }
 
