@@ -18,8 +18,8 @@ const misses = [
 
 <section class="section" id="limits" aria-labelledby="limits-title">
   <div class="wrap">
-    <p class="eyebrow reveal">Limits</p>
-    <h2 id="limits-title" class="section-title reveal">Know exactly what it covers.</h2>
+    <p class="file reveal"><b>§ 04</b><span>Limits</span><span>Read before sharing</span></p>
+    <h2 id="limits-title" class="section-title reveal">Know exactly what it <em>covers.</em></h2>
     <p class="section-lede reveal">MailHush changes what is drawn on screen, not what the site knows. Check anything sensitive before you share it.</p>
 
     <div class="cols">
@@ -36,16 +36,17 @@ const misses = [
 </section>
 
 <style>
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 48px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; margin-top: 48px; border: 1.5px solid var(--ink); }
   @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
-  .col { padding: 26px 28px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); }
-  .col h3 { font-size: 22px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .col h3::before { content: ''; width: 10px; height: 10px; border-radius: 50%; }
-  .yes h3::before { background: var(--mint); }
-  .no h3::before { background: var(--red); }
+  .col { padding: 26px 28px 20px; background: var(--sheet); }
+  .no { border-left: 1.5px solid var(--ink); background: var(--paper-2); }
+  @media (max-width: 760px) { .no { border-left: 0; border-top: 1.5px solid var(--ink); } }
+  .col h3 { font: 600 12px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 16px; display: inline-block; padding: 6px 9px; border: 2px solid currentColor; transform: rotate(-2deg); }
+  .yes h3 { color: var(--ok); }
+  .no h3 { color: var(--stamp); }
   ul { list-style: none; margin: 0; padding: 0; }
-  li { padding: 11px 0 11px 26px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 15px; position: relative; }
-  li::before { position: absolute; left: 0; top: 11px; font: 600 14px/1.6 var(--mono); }
-  .yes li::before { content: '✓'; color: var(--mint); }
-  .no li::before { content: '×'; color: var(--red); }
+  li { padding: 12px 0 12px 28px; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 17px; position: relative; }
+  li::before { position: absolute; left: 0; top: 12px; font: 600 15px/1.6 var(--mono); }
+  .yes li::before { content: '✓'; color: var(--ok); }
+  .no li::before { content: '✗'; color: var(--stamp); }
 </style>
