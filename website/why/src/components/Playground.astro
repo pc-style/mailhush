@@ -15,8 +15,8 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
 
 <section class="section" id="try" aria-labelledby="try-title">
   <div class="wrap">
-    <p class="file reveal"><b>§ 01</b><span>Playground</span><span>Live · in your browser</span></p>
-    <h2 id="try-title" class="section-title reveal">Paste anything. Watch it <em>disappear.</em></h2>
+    <p class="eyebrow reveal">Playground</p>
+    <h2 id="try-title" class="section-title reveal">Paste anything. Watch it disappear.</h2>
     <p class="section-lede reveal">
       This box runs the extension's own masking engine, right here in your browser. Nothing you type leaves this page.
     </p>
@@ -65,43 +65,48 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
 </section>
 
 <style>
-  .pg { margin-top: 48px; background: var(--sheet); border: 1.5px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); }
-  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 14px 18px; border-bottom: 1.5px solid var(--ink); background: var(--paper-2); }
-  .switch { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 4px; color: var(--ink); font: 600 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
-  .track { width: 44px; height: 24px; border: 1.5px solid var(--ink); background: var(--sheet); position: relative; }
-  .thumb { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; background: var(--ink-3); transition: transform 0.2s var(--ease), background 0.2s; }
-  .switch[aria-checked='true'] .thumb { transform: translateX(20px); background: var(--ink); }
-  .segmented { display: inline-flex; border: 1.5px solid var(--ink); }
-  .segmented button { border: 0; border-left: 1.5px solid var(--ink); background: var(--sheet); color: var(--ink-2); font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 14px; cursor: pointer; }
-  .segmented button:first-child { border-left: 0; }
-  .segmented button[aria-checked='true'] { background: var(--ink); color: var(--paper); }
+  .pg { margin-top: 48px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px rgba(0, 0, 0, 0.7); overflow: hidden; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+
+  .switch { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 4px; color: var(--text); font: 600 14px/1 var(--body); cursor: pointer; border-radius: 999px; }
+  .track { width: 42px; height: 24px; border-radius: 999px; background: var(--well-2); position: relative; transition: background 0.25s var(--ease); }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text); transition: transform 0.25s var(--ease), background 0.25s; }
+  .switch[aria-checked='true'] .track { background: var(--mint); }
+  .switch[aria-checked='true'] .thumb { transform: translateX(18px); background: var(--mint-ink); }
+
+  .segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--well); }
+  .segmented button { border: 0; background: none; color: var(--text-2); font: 500 13px/1 var(--body); padding: 8px 14px; border-radius: 7px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .segmented button[aria-checked='true'] { background: var(--well-2); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+
   .rule { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
-  .rule-tag { font: 600 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--stamp); }
-  .rule input { width: 120px; height: 34px; padding: 0 10px; border: 1.5px solid var(--ink); border-radius: 0; background: var(--sheet); color: var(--ink); font: 13px var(--mono); }
-  .rule input:focus { outline: none; box-shadow: 3px 3px 0 var(--stamp); }
-  .arrow { color: var(--ink-3); }
+  .rule-tag { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+  .rule input { width: 118px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 13px var(--mono); }
+  .rule input:focus { outline: none; border-color: var(--mint); }
+  .arrow { color: var(--text-3); }
   @media (max-width: 860px) { .rule { margin-left: 0; } }
+
   .panes { display: grid; grid-template-columns: 1fr 1fr; }
   @media (max-width: 760px) { .panes { grid-template-columns: 1fr; } }
-  .pane { display: flex; flex-direction: column; min-width: 0; padding: 18px 22px 24px; }
-  .pane.out { border-left: 1.5px dashed var(--rule-2); background: repeating-linear-gradient(transparent 0 27px, var(--rule) 27px 28px); }
-  @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1.5px dashed var(--rule-2); } }
-  .pane-head { display: flex; align-items: center; gap: 8px; font: 600 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
-  .dot { width: 8px; height: 8px; }
-  .dot.you { background: var(--stamp); }
-  .dot.viewers { background: var(--ink); }
-  .count { margin-left: auto; color: var(--stamp); border: 1.5px solid var(--stamp); padding: 3px 6px; transform: rotate(-2deg); }
-  textarea, pre { font: 14px/28px var(--mono); margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
-  textarea { resize: vertical; width: 100%; border: 0; background: none; color: var(--ink); padding: 0; }
+  .pane { display: flex; flex-direction: column; min-width: 0; padding: 18px 20px 22px; }
+  .pane.out { background: var(--bg-2); border-left: 1px solid var(--line); }
+  @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1px solid var(--line); } }
+  .pane-head { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.you { background: var(--red); }
+  .dot.viewers { background: var(--mint); }
+  .count { margin-left: auto; color: var(--mint); text-transform: none; letter-spacing: 0; }
+  textarea, pre { font: 14px/1.75 var(--mono); margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  textarea { resize: vertical; width: 100%; border: 0; background: none; color: var(--text); padding: 0; }
   textarea:focus { outline: none; }
-  pre { color: var(--ink-2); }
-  pre :global(mark) { color: var(--paper); background: var(--bar); padding: 1px 4px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 18px 18px; border-top: 1.5px solid var(--ink); }
-  .chip { border: 1.5px solid var(--rule-2); background: none; color: var(--ink-3); font: 500 12px/1 var(--mono); padding: 8px 11px; cursor: pointer; transition: all 0.15s var(--ease); }
-  .chip::before { content: '☐ '; }
-  .chip[aria-pressed='true'] { color: var(--ink); border-color: var(--ink); background: var(--paper-2); }
-  .chip[aria-pressed='true']::before { content: '☒ '; }
-  .chip:hover { border-color: var(--ink); }
+  pre { color: var(--text-2); }
+  pre :global(mark) { color: var(--mint); background: var(--mint-soft); border-radius: 4px; padding: 1px 3px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+  .chip { border: 1px solid var(--line-2); background: none; color: var(--text-3); font: 500 13px/1 var(--body); padding: 8px 12px; border-radius: 999px; cursor: pointer; transition: all 0.2s var(--ease); }
+  .chip::before { content: '+ '; }
+  .chip[aria-pressed='true'] { color: var(--mint); background: var(--mint-soft); border-color: transparent; }
+  .chip[aria-pressed='true']::before { content: '✓ '; }
+  .chip:hover { border-color: var(--mint); }
 </style>
 
 <script>

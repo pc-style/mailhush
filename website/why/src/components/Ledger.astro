@@ -11,8 +11,8 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 
 <section class="section" id="hides" aria-labelledby="hides-title">
   <div class="wrap">
-    <p class="file reveal"><b>§ 02</b><span>Detectors</span><span>11 + your rules</span></p>
-    <h2 id="hides-title" class="section-title reveal">Eleven detectors. <em>Checksums,</em> not guesses.</h2>
+    <p class="eyebrow reveal">What it hides</p>
+    <h2 id="hides-title" class="section-title reveal">Eleven detectors. Checksums, not guesses.</h2>
     <p class="section-lede reveal">
       Card numbers must pass Luhn, IBANs mod-97, and PESEL its checksum and a real birth date, so order IDs and
       version numbers stay readable. {onCount} detectors are on out of the box; switch on the rest in settings.
@@ -51,19 +51,22 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 </section>
 
 <style>
-  .ledger { margin-top: 48px; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
-  .lrow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.2fr) minmax(0, 0.7fr) minmax(0, 1fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--rule); }
-  .lrow:last-child { border-bottom: 0; }
-  .lrow:not(.head):hover { background: var(--paper-2); }
-  .head { font: 600 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding: 14px 4px; border-bottom: 1px solid var(--ink); }
-  .name strong { font: 600 21px/1.2 var(--display); letter-spacing: -0.01em; }
-  .name em { font: 600 10px/1 var(--mono); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: var(--stamp); border: 1px solid var(--stamp); padding: 2px 4px; margin-left: 10px; vertical-align: 3px; white-space: nowrap; display: inline-block; }
-  .name small { display: block; color: var(--ink-3); font-size: 15px; font-style: italic; line-height: 1.45; margin-top: 3px; }
+  .ledger { margin-top: 48px; border-top: 1px solid var(--line-2); }
+  .lrow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.2fr) minmax(0, 0.7fr) minmax(0, 1fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
+  .lrow:not(.head):hover { background: linear-gradient(90deg, transparent, var(--bg-2) 20%, var(--bg-2) 80%, transparent); }
+  .head { font: 500 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 14px 4px; }
+  .name strong { font-weight: 600; font-size: 16px; }
+  .name em { font: 500 10px/1 var(--mono); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mint); margin-left: 10px; vertical-align: 2px; }
+  .name small { display: block; color: var(--text-3); font-size: 13px; line-height: 1.45; margin-top: 3px; }
   .mono { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
-  .rawval { color: var(--stamp); }
-  .partial { color: var(--ink-2); }
-  .lrow :global(.pill) { background: var(--bar); color: var(--paper); padding: 2px 6px; white-space: nowrap; }
-  .own { background: repeating-linear-gradient(-45deg, transparent 0 8px, var(--rule) 8px 9px); }
-  .own .partial { color: var(--ink-3); }
-  @media (max-width: 860px) { .head { display: none; } .lrow { grid-template-columns: 1fr 1fr; gap: 10px 16px; } .name { grid-column: 1 / -1; } .partial { display: none; } }
+  .rawval { color: var(--red); }
+  .partial { color: var(--text-2); }
+  .own { border-bottom-style: dashed; }
+  .own .partial { color: var(--text-3); }
+  @media (max-width: 860px) {
+    .head { display: none; }
+    .lrow { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    .name { grid-column: 1 / -1; }
+    .partial { display: none; }
+  }
 </style>
