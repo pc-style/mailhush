@@ -1,6 +1,8 @@
 ---
 import { detectors, mask } from '../lib/mask';
 
+// Long values keep their start and end, which is what partial masking preserves.
+const short = (s: string) => (s.length > 36 ? `${s.slice(0, 16)}…${s.slice(-8)}` : s);
 const rows = detectors.map((d) => ({
   ...d,
   label: mask(d.example, { on: [d.id] }),
@@ -11,12 +13,13 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 
 <section class="section" id="hides" aria-labelledby="hides-title">
   <div class="wrap">
-    <p class="eyebrow reveal">What it hides</p>
-    <h2 id="hides-title" class="section-title reveal">Eleven detectors. Checksums, not guesses.</h2>
-    <p class="section-lede reveal">
-      Card numbers must pass Luhn, IBANs mod-97, and PESEL its checksum and a real birth date, so order IDs and
-      version numbers stay readable. {onCount} detectors are on out of the box; switch on the rest in settings.
-    </p>
+    <header class="section-head">
+      <h2 id="hides-title" class="section-title reveal">What it catches</h2>
+      <p class="section-lede reveal">
+        Card numbers must pass Luhn, IBANs mod-97, and PESEL its checksum and a real birth date, so order IDs and
+        version numbers stay readable. {onCount} detectors are on out of the box; switch on the rest in settings.
+      </p>
+    </header>
 
     <div class="ledger reveal" role="table" aria-label="Detectors and what they show">
       <div class="lrow head" role="row">
@@ -32,7 +35,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
             {r.defaultEnabled && <em>on by default</em>}
             <small>{r.description}</small>
           </span>
-          <span class="mono rawval" role="cell">{r.example}</span>
+          <span class="mono rawval" role="cell" title={r.example}>{short(r.example)}</span>
           <span class="mono" role="cell"><span class="pill">{r.label}</span></span>
           <span class="mono partial" role="cell">{r.partial}</span>
         </div>
@@ -52,11 +55,11 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 
 <style>
   .ledger { margin-top: 48px; border-top: 1px solid var(--line-2); }
-  .lrow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.2fr) minmax(0, 0.7fr) minmax(0, 1fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
-  .lrow:not(.head):hover { background: linear-gradient(90deg, transparent, var(--bg-2) 20%, var(--bg-2) 80%, transparent); }
+  .lrow { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 0.5fr) minmax(0, 1.25fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
+  .lrow:not(.head):hover { background: var(--bg-2); }
   .head { font: 500 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 14px 4px; }
   .name strong { font-weight: 600; font-size: 16px; }
-  .name em { font: 500 10px/1 var(--mono); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mint); margin-left: 10px; vertical-align: 2px; }
+  .name em { font: 500 10px/1 var(--mono); font-style: normal; color: var(--mint); margin-left: 10px; vertical-align: 2px; white-space: nowrap; }
   .name small { display: block; color: var(--text-3); font-size: 13px; line-height: 1.45; margin-top: 3px; }
   .mono { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
   .rawval { color: var(--red); }
