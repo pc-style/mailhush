@@ -72,7 +72,7 @@ const rule = mask('Ship ORD-991 to Acme Corp', {
   .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 48px; }
   @media (max-width: 960px) { .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 620px) { .bento { grid-template-columns: 1fr; } }
-  .tile { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); transition: transform 0.3s var(--ease), box-shadow 0.3s; }
+  .tile { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); transition: box-shadow 0.3s; }
   .tile:hover { box-shadow: 0 0 0 1px var(--line-2); }
   .tile.wide { grid-column: span 2; }
   @media (max-width: 620px) { .tile.wide { grid-column: auto; } }
@@ -81,7 +81,7 @@ const rule = mask('Ship ORD-991 to Acme Corp', {
   .tile code { color: var(--text); }
   .styles { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
   .styles li { display: grid; grid-template-columns: 76px 1fr; align-items: center; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); }
-  .k { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+  .k { font: 500 11px/1 var(--mono); color: var(--text-3); }
   .styles code { color: var(--mint); font-size: 15px; overflow-wrap: anywhere; }
   .demo { margin-top: auto; display: grid; gap: 6px; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); font-size: 14px; }
   .demo .before { color: var(--text-3); text-decoration: line-through; text-decoration-color: rgba(242, 163, 163, 0.5); }

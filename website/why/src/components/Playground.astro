@@ -80,7 +80,7 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
   .segmented button[aria-checked='true'] { background: var(--well-2); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
 
   .rule { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
-  .rule-tag { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+  .rule-tag { font: 500 11px/1 var(--mono); color: var(--text-3); }
   .rule input { width: 118px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 13px var(--mono); }
   .rule input:focus { outline: none; border-color: var(--mint); }
   .arrow { color: var(--text-3); }
@@ -91,7 +91,7 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
   .pane { display: flex; flex-direction: column; min-width: 0; padding: 18px 20px 22px; }
   .pane.out { background: var(--bg-2); border-left: 1px solid var(--line); }
   @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1px solid var(--line); } }
-  .pane-head { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
+  .pane-head { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); color: var(--text-3); margin-bottom: 14px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; }
   .dot.you { background: var(--red); }
   .dot.viewers { background: var(--mint); }
