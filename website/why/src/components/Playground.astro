@@ -97,7 +97,9 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
   .dot.viewers { background: var(--mint); }
   .count { margin-left: auto; color: var(--mint); text-transform: none; letter-spacing: 0; }
   textarea, pre { font: 14px/1.75 var(--mono); margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
-  textarea { resize: none; overflow: hidden; width: 100%; border: 0; background: none; color: var(--text); padding: 0; }
+  textarea { resize: vertical; width: 100%; border: 0; background: none; color: var(--text); padding: 0; }
+  :global(.js) textarea { resize: none; }
+  textarea, pre { max-height: 560px; overflow-y: auto; }
   textarea:focus { outline: none; }
   pre { color: var(--text-2); }
   pre :global(mark) { color: var(--mint); background: var(--mint-soft); border-radius: 4px; padding: 1px 3px; }
@@ -171,6 +173,7 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
     }),
   );
   // Grow the input to fit its text, so wrapped lines on narrow screens are never cut off.
+  // Past max-height it scrolls instead.
   const fit = () => {
     input.style.height = 'auto';
     input.style.height = `${input.scrollHeight}px`;
@@ -178,6 +181,9 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
   [input, pattern, replace].forEach((el) => el.addEventListener('input', render));
   input.addEventListener('input', fit);
   addEventListener('resize', fit);
+  // Refit once the web font changes line wrapping, and after the browser restores a draft.
+  document.fonts?.ready.then(fit);
+  addEventListener('pageshow', () => { render(); fit(); });
   render();
   fit();
 </script>
