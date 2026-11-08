@@ -66,50 +66,51 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
 </section>
 
 <style>
-  .pg { margin-top: 48px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px rgba(0, 0, 0, 0.7); overflow: hidden; }
-  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .pg { margin-top: 56px; border-radius: var(--radius); background: var(--bg-2); box-shadow: 0 0 0 1.5px var(--line-2); overflow: hidden; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; padding: 16px 18px; border-bottom: 1.5px solid var(--line-2); }
 
-  .switch { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 4px; color: var(--text); font: 600 14px/1 var(--body); cursor: pointer; border-radius: 999px; }
-  .track { width: 42px; height: 24px; border-radius: 999px; background: var(--well-2); position: relative; transition: background 0.25s var(--ease); }
-  .thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text); transition: transform 0.25s var(--ease), background 0.25s; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 4px; color: var(--text); font: 700 15px/1 var(--body); cursor: pointer; border-radius: 4px; }
+  .track { width: 44px; height: 26px; border-radius: 999px; background: var(--well-2); position: relative; transition: background 0.12s; }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--text); transition: transform 0.14s var(--snap), background 0.12s; }
   .switch[aria-checked='true'] .track { background: var(--mint); }
   .switch[aria-checked='true'] .thumb { transform: translateX(18px); background: var(--mint-ink); }
 
-  .segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--well); }
-  .segmented button { border: 0; background: none; color: var(--text-2); font: 500 13px/1 var(--body); padding: 8px 14px; border-radius: 7px; cursor: pointer; transition: background 0.2s, color 0.2s; }
-  .segmented button[aria-checked='true'] { background: var(--well-2); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+  .segmented { display: inline-flex; padding: 3px; border-radius: var(--radius); background: var(--well); }
+  .segmented button { border: 0; background: none; color: var(--text-2); font: 600 14px/1 var(--body); padding: 9px 15px; border-radius: 4px; cursor: pointer; transition: background 0.12s, color 0.12s; }
+  .segmented button[aria-checked='true'] { background: var(--text); color: var(--bg); }
 
   .rule { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
-  .rule-tag { font: 500 11px/1 var(--mono); color: var(--text-3); }
-  .rule input { width: 118px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg); color: var(--text); font: 13px var(--mono); }
+  .rule-tag { font: 600 13px/1 var(--body); color: var(--text-3); }
+  .rule input { width: 118px; height: 36px; padding: 0 10px; border-radius: 4px; border: 1.5px solid var(--line-2); background: var(--bg); color: var(--text); font: 600 14px var(--body); }
   .rule input:focus { outline: none; border-color: var(--mint); }
   .arrow { color: var(--text-3); }
   @media (max-width: 860px) { .rule { margin-left: 0; } }
 
   .panes { display: grid; grid-template-columns: 1fr 1fr; }
   @media (max-width: 760px) { .panes { grid-template-columns: 1fr; } }
-  .pane { display: flex; flex-direction: column; min-width: 0; padding: 18px 20px 22px; }
-  .pane.out { background: var(--bg-2); border-left: 1px solid var(--line); }
-  @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1px solid var(--line); } }
-  .pane-head { display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); color: var(--text-3); margin-bottom: 14px; }
+  .pane { display: flex; flex-direction: column; min-width: 0; padding: 20px 22px 24px; }
+  .pane.out { background: var(--bg); border-left: 1.5px solid var(--line-2); }
+  @media (max-width: 760px) { .pane.out { border-left: 0; border-top: 1.5px solid var(--line-2); } }
+  .pane-head { display: flex; align-items: center; gap: 8px; font: 700 14px/1 var(--body); color: var(--text-3); margin-bottom: 16px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; }
   .dot.you { background: var(--red); }
   .dot.viewers { background: var(--mint); }
-  .count { margin-left: auto; color: var(--mint); text-transform: none; letter-spacing: 0; }
-  textarea, pre { font: 14px/1.75 var(--mono); margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .count { margin-left: auto; color: var(--mint); }
+  textarea, pre { font: 500 16px/1.75 var(--body); font-variant-numeric: tabular-nums; margin: 0; min-height: 230px; white-space: pre-wrap; overflow-wrap: anywhere; }
   textarea { resize: vertical; width: 100%; border: 0; background: none; color: var(--text); padding: 0; }
   :global(.js) textarea { resize: none; }
   textarea, pre { max-height: 560px; overflow-y: auto; }
   textarea:focus { outline: none; }
   pre { color: var(--text-2); }
-  pre :global(mark) { color: var(--mint); background: var(--mint-soft); border-radius: 4px; padding: 1px 3px; }
+  pre :global(mark) { display: inline-block; color: var(--mint); background: none; font-weight: 800; }
+  pre:global(.hit) :global(mark) { animation: punch 0.2s var(--snap); }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
-  .chip { border: 1px solid var(--line-2); background: none; color: var(--text-3); font: 500 13px/1 var(--body); padding: 8px 12px; border-radius: 999px; cursor: pointer; transition: all 0.2s var(--ease); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px 18px; border-top: 1.5px solid var(--line-2); }
+  .chip { border: 1.5px solid var(--line-2); background: none; color: var(--text-3); font: 600 14px/1 var(--body); padding: 9px 13px; border-radius: 4px; cursor: pointer; transition: color 0.12s, background 0.12s, border-color 0.12s; }
   .chip::before { content: '+ '; }
-  .chip[aria-pressed='true'] { color: var(--mint); background: var(--mint-soft); border-color: transparent; }
+  .chip[aria-pressed='true'] { color: var(--mint-ink); background: var(--mint); border-color: var(--mint); }
   .chip[aria-pressed='true']::before { content: '✓ '; }
-  .chip:hover { border-color: var(--mint); }
+  .chip:hover { border-color: var(--text); }
 </style>
 
 <script>
@@ -153,23 +154,31 @@ const startOn = new Set([...detectors.filter((d) => d.defaultEnabled).map((d) =>
     count.textContent = enabled ? `${hits} masked` : 'masking off';
   };
 
+  const hit = () => {
+    output.classList.remove('hit');
+    void output.offsetWidth;
+    output.classList.add('hit');
+  };
   power.addEventListener('click', () => {
     const on = power.getAttribute('aria-checked') !== 'true';
     power.setAttribute('aria-checked', String(on));
     power.querySelector('.switch-label')!.textContent = on ? 'MailHush on' : 'MailHush off';
     render();
+    hit();
   });
   styles.forEach((b) =>
     b.addEventListener('click', () => {
       styles.forEach((o) => o.setAttribute('aria-checked', String(o === b)));
       style = b.dataset.style as Style;
       render();
+      hit();
     }),
   );
   chips.forEach((c) =>
     c.addEventListener('click', () => {
       c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
       render();
+      hit();
     }),
   );
   // Grow the input to fit its text, so wrapped lines on narrow screens are never cut off.

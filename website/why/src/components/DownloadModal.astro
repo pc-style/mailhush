@@ -42,13 +42,13 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
 <style>
   .modal { margin: auto; background: transparent; border: none; padding: 0; color: var(--text); }
   .modal::backdrop { background: rgba(10, 9, 8, 0.75); backdrop-filter: blur(6px); }
-  .modal-content { position: relative; width: min(92vw, 420px); padding: 30px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -20px rgba(0, 0, 0, 0.8); font-family: var(--body); }
+  .modal-content { position: relative; width: min(92vw, 420px); padding: 30px; border-radius: var(--radius); background: var(--bg-2); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -20px rgba(0, 0, 0, 0.8); font-family: var(--body); }
   .close-btn { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--well); color: var(--text-2); font-size: 20px; line-height: 1; cursor: pointer; }
   .close-btn:hover { color: var(--text); background: var(--well-2); }
-  .modal-title { font: 700 30px/1 var(--display); letter-spacing: -0.03em; margin: 0 0 8px; }
+  .modal-title { font: 800 36px/1 var(--display); letter-spacing: -0.045em; margin: 0 0 8px; }
   .modal-desc { color: var(--text-2); font-size: 15px; margin: 0 0 22px; }
   .modal-options { display: grid; gap: 10px; }
-  .modal-btn { display: flex; align-items: center; gap: 16px; width: 100%; padding: 15px 16px; border: 0; border-radius: 14px; background: var(--bg-2); box-shadow: 0 0 0 1px var(--line); color: var(--text); text-align: left; text-decoration: none; cursor: pointer; font: inherit; transition: box-shadow 0.2s; }
+  .modal-btn { display: flex; align-items: center; gap: 16px; width: 100%; padding: 15px 16px; border: 0; border-radius: 4px; background: var(--bg); box-shadow: 0 0 0 1.5px var(--line-2); color: var(--text); text-align: left; text-decoration: none; cursor: pointer; font: inherit; transition: box-shadow 0.12s; }
   .modal-btn:hover:not(.disabled) { box-shadow: 0 0 0 1px var(--mint); }
   .modal-btn.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
   .icon-wrapper { width: 30px; height: 30px; flex-shrink: 0; }

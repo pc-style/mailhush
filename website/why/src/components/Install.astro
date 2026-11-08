@@ -32,25 +32,19 @@ import ChromeIcon from '../assets/Chrome.svg?raw';
 </section>
 
 <style>
-  .panel {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 48px;
-    align-items: center;
-    padding: 56px;
-    border-radius: 24px;
-    background: var(--card);
-    box-shadow: 0 0 0 1px var(--line-2);
-  }
-  @media (max-width: 900px) { .panel { grid-template-columns: 1fr; padding: 32px 22px; gap: 32px; } }
-  .options { display: grid; gap: 10px; }
-  .opt { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: 14px; background: var(--bg-2); box-shadow: 0 0 0 1px var(--line); text-decoration: none; transition: box-shadow 0.25s; }
-  a.opt:hover { box-shadow: 0 0 0 1px var(--mint); }
+  .panel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 56px; align-items: end; padding-top: 32px; border-top: 1.5px solid var(--text); }
+  @media (max-width: 900px) { .panel { grid-template-columns: 1fr; gap: 36px; } }
+  .copy :global(.section-title) { font-size: clamp(56px, 10vw, 148px); max-width: 8ch; }
+  .options { display: grid; }
+  .opt { display: flex; align-items: center; gap: 16px; padding: 20px 4px; border-bottom: 1px solid var(--line-2); text-decoration: none; transition: background 0.12s, padding 0.12s var(--snap); }
+  .opt:first-child { border-top: 1px solid var(--line-2); }
+  a.opt:hover { background: var(--mint); color: var(--mint-ink); padding-left: 16px; }
+  a.opt:hover small, a.opt:hover .go { color: var(--mint-ink); }
   .ico { width: 30px; height: 30px; flex-shrink: 0; }
   .ico :global(svg) { width: 100%; height: 100%; }
   .t { display: flex; flex-direction: column; }
-  .t strong { font-weight: 600; }
-  .t small { color: var(--text-3); font-size: 13px; }
-  .go { margin-left: auto; color: var(--mint); font-size: 18px; }
-  .soon { opacity: 0.5; filter: grayscale(1); }
+  .t strong { font: 800 22px/1.1 var(--display); letter-spacing: -0.03em; }
+  .t small { color: var(--text-3); font-size: 14px; }
+  .go { margin-left: auto; color: var(--mint); font-size: 22px; font-weight: 800; }
+  .soon { opacity: 0.45; filter: grayscale(1); }
 </style>

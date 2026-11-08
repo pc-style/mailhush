@@ -69,26 +69,26 @@ const rule = mask('Ship ORD-991 to Acme Corp', {
 </section>
 
 <style>
-  .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 48px; }
+  .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 56px; border-top: 1.5px solid var(--text); border-left: 1px solid var(--line-2); }
   @media (max-width: 960px) { .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 620px) { .bento { grid-template-columns: 1fr; } }
-  .tile { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); transition: box-shadow 0.3s; }
-  .tile:hover { box-shadow: 0 0 0 1px var(--line-2); }
+  .tile { display: flex; flex-direction: column; gap: 12px; padding: 30px 28px 32px; border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); transition: background 0.12s; }
+  .tile:hover { background: var(--bg-2); }
   .tile.wide { grid-column: span 2; }
   @media (max-width: 620px) { .tile.wide { grid-column: auto; } }
-  .tile h3 { font-size: 21px; letter-spacing: -0.02em; }
-  .tile p { color: var(--text-2); font-size: 15px; }
+  .tile h3 { font-size: 28px; line-height: 1; letter-spacing: -0.045em; }
+  .tile p { color: var(--text-2); font-size: 16px; }
   .tile code { color: var(--text); }
-  .styles { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
-  .styles li { display: grid; grid-template-columns: 76px 1fr; align-items: center; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); }
-  .k { font: 500 11px/1 var(--mono); text-transform: capitalize; color: var(--text-3); }
-  .styles code { color: var(--mint); font-size: 15px; overflow-wrap: anywhere; }
-  .demo { margin-top: auto; display: grid; gap: 6px; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); font-size: 14px; }
-  .demo .before { color: var(--text-3); text-decoration: line-through; text-decoration-color: rgba(242, 163, 163, 0.5); }
+  .styles { list-style: none; padding: 0; margin: 10px 0 0; display: grid; }
+  .styles li { display: grid; grid-template-columns: 96px 1fr; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--line-2); }
+  .k { font: 700 15px/1 var(--body); text-transform: capitalize; color: var(--text-3); }
+  .styles code { color: var(--mint); font-size: clamp(18px, 2vw, 24px); font-weight: 800; font-family: var(--display); letter-spacing: -0.03em; overflow-wrap: anywhere; }
+  .demo { margin-top: auto; display: grid; gap: 6px; padding-top: 16px; border-top: 1px solid var(--line-2); font-size: 16px; }
+  .demo .before { color: var(--red); text-decoration: line-through; text-decoration-thickness: 2px; }
   .demo .after { color: var(--mint); overflow-wrap: anywhere; }
-  .site { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--bg-2); font-size: 14px; }
+  .site { margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 16px; border-top: 1px solid var(--line-2); font-size: 16px; }
   .sdot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
-  .skip { margin-left: auto; color: var(--amber); font-size: 13px; }
+  .skip { margin-left: auto; color: var(--amber); font-weight: 700; font-size: 14px; }
   .keys { margin-top: auto; display: flex; gap: 6px; }
-  kbd { padding: 8px 12px; border-radius: 8px; background: var(--well); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35), 0 0 0 1px var(--line-2); color: var(--text); font-size: 14px; }
+  kbd { padding: 9px 13px; border-radius: 4px; background: var(--text); color: var(--bg); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25); font-size: 16px; font-weight: 800; }
 </style>

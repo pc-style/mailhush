@@ -26,7 +26,7 @@ const ogImage = new URL('/assets/social-card.png', Astro.site);
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
-  <meta name="theme-color" content="#121110" />
+  <meta name="theme-color" content="#0a0a09" />
 
   <meta property="og:type" content="website" />
   <meta property="og:url" content={canonical} />
@@ -42,7 +42,7 @@ const ogImage = new URL('/assets/social-card.png', Astro.site);
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400..700&display=swap" rel="stylesheet" />
 </head>
 <body>
   <Nav />
@@ -72,7 +72,7 @@ const ogImage = new URL('/assets/social-card.png', Astro.site);
       { rootMargin: '0px 0px -8% 0px' },
     );
     document.querySelectorAll('.reveal').forEach((el, i) => {
-      (el as HTMLElement).style.transitionDelay ||= `${Math.min(i % 4, 3) * 70}ms`;
+      (el as HTMLElement).style.animationDelay ||= `${Math.min(i % 4, 3) * 70}ms`;
       reveal.observe(el);
     });
     const onScroll = () => document.body.classList.toggle('scrolled', scrollY > 8);
