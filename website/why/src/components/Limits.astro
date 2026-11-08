@@ -37,16 +37,15 @@ const misses = [
 </section>
 
 <style>
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 48px; }
-  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
-  .col { padding: 26px 28px; border-radius: var(--radius); background: var(--card); box-shadow: 0 0 0 1px var(--line); }
-  .col h3 { font-size: 22px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .col h3::before { content: ''; width: 10px; height: 10px; border-radius: 50%; }
-  .yes h3::before { background: var(--mint); }
-  .no h3::before { background: var(--red); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; margin-top: 56px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; gap: 48px; } }
+  .col { border-top: 1.5px solid var(--text); padding-top: 22px; }
+  .col h3 { font-size: 34px; letter-spacing: -0.045em; margin-bottom: 12px; }
+  .yes h3 { color: var(--mint); }
+  .no h3 { color: var(--red); }
   ul { list-style: none; margin: 0; padding: 0; }
-  li { padding: 11px 0 11px 26px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 15px; position: relative; }
-  li::before { position: absolute; left: 0; top: 11px; font: 600 14px/1.6 var(--mono); }
+  li { padding: 13px 0 13px 30px; border-top: 1px solid var(--line-2); color: var(--text-2); font-size: 16px; position: relative; }
+  li::before { position: absolute; left: 0; top: 12px; font: 800 17px/1.6 var(--body); }
   .yes li::before { content: '✓'; color: var(--mint); }
   .no li::before { content: '×'; color: var(--red); }
 </style>

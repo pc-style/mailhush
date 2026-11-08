@@ -1,27 +1,26 @@
 :root {
-  --bg: #121110;
-  --bg-2: #181716;
-  --card: #1f1d1c;
-  --well: #292726;
-  --well-2: #33302f;
-  --line: rgba(255, 245, 235, 0.08);
-  --line-2: rgba(255, 245, 235, 0.14);
-  --text: #ece8e4;
-  --text-2: #bcb6b0;
+  --bg: #0a0a09;
+  --bg-2: #121211;
+  --card: #161615;
+  --well: #222120;
+  --well-2: #2d2b2a;
+  --line: rgba(255, 245, 235, 0.09);
+  --line-2: rgba(255, 245, 235, 0.18);
+  --text: #f1ede8;
+  --text-2: #bdb7b1;
   --text-3: #8f8984;
   --mint: #8fd6b4;
-  --mint-ink: #102219;
+  --mint-ink: #0c1d15;
   --mint-soft: rgba(143, 214, 180, 0.13);
-  --red: #f2a3a3;
-  --red-soft: rgba(242, 163, 163, 0.12);
+  --red: #ff5a46;
   --amber: #f0cf8a;
   --blue: #9cc3f5;
   --display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
   --body: 'Hanken Grotesk', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
-  --radius: 14px;
-  --page: 1180px;
+  /* Hard in, no float: what the launch film does on every hit. */
+  --snap: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --radius: 6px;
+  --page: 1240px;
   color-scheme: dark;
 }
 
@@ -35,63 +34,61 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: -0.04em; margin: 0; }
 p { margin: 0; }
 a { color: inherit; }
 img, video { max-width: 100%; display: block; }
-code, kbd { font-family: var(--mono); font-size: 0.88em; }
-:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+code, kbd { font-family: var(--body); font-weight: 600; font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
 ::selection { background: var(--mint); color: var(--mint-ink); }
 
-.wrap { width: 100%; max-width: var(--page); margin: 0 auto; padding: 0 28px; }
+.wrap { width: 100%; max-width: var(--page); margin: 0 auto; padding: 0 32px; }
 @media (max-width: 640px) { .wrap { padding: 0 18px; } }
 
-.section { padding: 120px 0 0; }
-@media (max-width: 760px) { .section { padding-top: 88px; } }
-.eyebrow { font-size: 15px; color: var(--text-3); margin-bottom: 18px; }
-.section-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-items: start; }
-.section-head .section-lede { margin-top: 0; padding-bottom: 6px; }
-@media (max-width: 860px) { .section-head { display: block; } .section-head .section-lede { margin-top: 18px; padding-bottom: 0; } }
-.section-title { font-size: clamp(34px, 5vw, 58px); line-height: 1.02; max-width: 16ch; }
-.section-lede { color: var(--text-2); font-size: 18px; max-width: 58ch; margin-top: 18px; }
+.section { padding: 160px 0 0; }
+@media (max-width: 760px) { .section { padding-top: 104px; } }
+.eyebrow { font-size: 15px; color: var(--text-3); margin-bottom: 22px; }
+.section-head { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); column-gap: 64px; align-items: end; }
+.section-head .section-lede { margin-top: 0; padding-bottom: 10px; }
+@media (max-width: 860px) { .section-head { display: block; } .section-head .section-lede { margin-top: 20px; padding-bottom: 0; } }
+.section-title { font-size: clamp(44px, 7vw, 96px); line-height: 0.92; letter-spacing: -0.045em; max-width: 12ch; }
+.section-lede { color: var(--text-2); font-size: 18px; max-width: 52ch; margin-top: 20px; }
 
-/* A masked value, styled like the extension's own label output. */
-.pill {
-  display: inline-block;
-  font: 500 0.86em/1.35 var(--mono);
-  color: var(--mint);
-  background: var(--mint-soft);
-  padding: 0.08em 0.45em;
-  border-radius: 5px;
-  white-space: nowrap;
-}
-.raw { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.45); text-underline-offset: 4px; }
+/* A masked value, the way the extension writes it into the page. */
+.pill { font-weight: 700; color: var(--mint); white-space: nowrap; }
+.raw { color: var(--red); }
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  height: 48px;
-  padding: 0 22px;
-  border-radius: 999px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: var(--radius);
   border: 0;
-  font: 600 15px/1 var(--body);
+  font: 700 16px/1 var(--body);
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.3s;
+  transition: background 0.12s, color 0.12s, box-shadow 0.12s;
 }
-.btn svg { width: 17px; height: 17px; }
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 18px; height: 18px; }
 .btn-primary { background: var(--mint); color: var(--mint-ink); }
-.btn-primary:hover { background: #a3e0c3; }
-.btn-ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
-.btn-ghost:hover { background: var(--well); }
+.btn-primary:hover { background: var(--text); }
+.btn-ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--text); }
 
-.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
-.js .reveal.in { opacity: 1; transform: none; }
+/* Reveal: things land, they don't drift in. */
+.js .reveal { opacity: 0; }
+.js .reveal.in { animation: land 0.32s var(--snap) both; }
+@keyframes land { from { opacity: 0; transform: translateY(26px) scale(1.02); } 40% { opacity: 1; } to { opacity: 1; transform: none; } }
+/* The redaction hit: a masked value punches in where the raw one was. */
+@keyframes punch { from { transform: scale(1.3); } to { transform: none; } }
+@keyframes squash { to { transform: scale(0.94, 1.04); opacity: 0.5; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
-  .js .reveal { opacity: 1; transform: none; }
+  .js .reveal { opacity: 1; }
 }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

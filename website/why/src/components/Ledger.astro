@@ -21,7 +21,9 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
       </p>
     </header>
 
-    <div class="ledger reveal" role="table" aria-label="Detectors and what they show">
+    <p class="tally reveal" aria-hidden="true"><span class="n" data-to={rows.length}>{rows.length}</span><span class="t">detectors.<br />Checksums, not guesses.</span></p>
+
+    <div class="ledger" role="table" aria-label="Detectors and what they show">
       <div class="lrow head" role="row">
         <span role="columnheader">Detector</span>
         <span role="columnheader">On the page</span>
@@ -36,7 +38,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
             <small>{r.description}</small>
           </span>
           <span class="mono rawval" role="cell" title={r.example}>{short(r.example)}</span>
-          <span class="mono" role="cell"><span class="pill">{r.label}</span></span>
+          <span class="mono" role="cell"><span class="pill swap" data-raw={short(r.example)}>{r.label}</span></span>
           <span class="mono partial" role="cell">{r.partial}</span>
         </div>
       ))}
@@ -54,18 +56,27 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
 </section>
 
 <style>
-  .ledger { margin-top: 48px; border-top: 1px solid var(--line-2); }
-  .lrow { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 0.5fr) minmax(0, 1.25fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
+  .tally { display: flex; align-items: flex-end; gap: 22px; margin-top: 64px; }
+  .n { font: 800 clamp(120px, 20vw, 280px)/0.78 var(--display); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; display: inline-block; transform-origin: 0 90%; }
+  .n.tick { animation: punch 0.12s var(--snap); }
+  .t { font: 800 clamp(22px, 2.6vw, 34px)/1.05 var(--display); letter-spacing: -0.035em; padding-bottom: 4px; }
+  .ledger { margin-top: 56px; border-top: 1.5px solid var(--text); }
+  .lrow { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 0.5fr) minmax(0, 1.25fr); gap: 24px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line-2); }
   .lrow:not(.head):hover { background: var(--bg-2); }
-  .head { font: 500 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 14px 4px; }
-  .name strong { font-weight: 600; font-size: 16px; }
-  .name em { font: 500 10px/1 var(--mono); font-style: normal; color: var(--mint); margin-left: 10px; vertical-align: 2px; white-space: nowrap; }
-  .name small { display: block; color: var(--text-3); font-size: 13px; line-height: 1.45; margin-top: 3px; }
-  .mono { font: 13px/1.5 var(--mono); overflow-wrap: anywhere; }
+  .head { font: 700 12px/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); padding: 14px 4px; }
+  .name strong { font-weight: 700; font-size: 17px; }
+  .name em { font: 700 12px/1 var(--body); font-style: normal; color: var(--mint); margin-left: 10px; vertical-align: 2px; white-space: nowrap; }
+  .name small { display: block; color: var(--text-3); font-size: 14px; line-height: 1.45; margin-top: 3px; }
+  .mono { font: 600 15px/1.5 var(--body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .rawval { color: var(--red); }
   .partial { color: var(--text-2); }
   .own { border-bottom-style: dashed; }
   .own .partial { color: var(--text-3); }
+  .swap { display: inline-block; transform-origin: 20% 60%; }
+  .swap.raw-now { color: var(--red); font-weight: 600; }
+  .swap.punch { animation: punch 0.2s var(--snap); }
+  :global(.js) .lrow:not(.head).wait { opacity: 0; }
+  .lrow.landed { animation: land 0.28s var(--snap) both; }
   @media (max-width: 860px) {
     .head { display: none; }
     .lrow { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
@@ -73,3 +84,41 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
     .partial { display: none; }
   }
 </style>
+
+<script>
+  // Like the launch film: rows land one after another, then each raw value gets swapped for its label.
+  const ledger = document.querySelector<HTMLElement>('.ledger')!;
+  const rows = [...ledger.querySelectorAll<HTMLElement>('.lrow:not(.head)')];
+  const n = document.querySelector<HTMLElement>('.tally .n')!;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!still) {
+    const swaps = [...ledger.querySelectorAll<HTMLElement>('.swap')];
+    const labels = swaps.map((s) => s.textContent!);
+    rows.forEach((r) => r.classList.add('wait'));
+    swaps.forEach((s) => { s.textContent = s.dataset.raw!; s.classList.add('raw-now'); });
+
+    const count = () => {
+      const to = Number(n.dataset.to);
+      for (let i = 0; i <= to; i++) setTimeout(() => {
+        n.textContent = String(i);
+        n.classList.remove('tick'); void n.offsetWidth; n.classList.add('tick');
+      }, i * 62);
+    };
+    const play = () => {
+      rows.forEach((r, i) => setTimeout(() => { r.classList.remove('wait'); r.classList.add('landed'); }, i * 60));
+      swaps.forEach((s, i) => setTimeout(() => {
+        s.textContent = labels[i];
+        s.classList.remove('raw-now');
+        s.classList.add('punch');
+      }, 520 + i * 125));
+    };
+    const watch = (el: Element, fn: () => void) => {
+      const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { io.disconnect(); fn(); } }, { rootMargin: '0px 0px -15% 0px' });
+      io.observe(el);
+    };
+    n.textContent = '0';
+    watch(n, count);
+    watch(ledger, play);
+  }
+</script>

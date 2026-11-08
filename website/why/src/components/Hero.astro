@@ -1,5 +1,5 @@
 ---
-// Words the headline cycles through, each with what MailHush shows instead.
+// Words the headline cycles through, each with what MailHush writes in its place.
 const words = [
   { raw: 'email', masked: '[email]' },
   { raw: 'card', masked: '[card]' },
@@ -7,108 +7,98 @@ const words = [
   { raw: 'IBAN', masked: '[IBAN]' },
   { raw: 'phone', masked: '[phone]' },
 ];
+const line1 = ['Share', 'your', 'screen.'];
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title">
-  <div class="wrap hero-inner">
+  <div class="wrap">
     <p class="eyebrow reveal">A browser extension for Chromium, Firefox and Zen</p>
-    <h1 id="hero-title" class="reveal">
-      Share your screen.<br />
-      Not your{' '}<span class="redact" aria-hidden="true" data-words={JSON.stringify(words)}><span class="word">{words[0].raw}</span><span class="bar"><span class="label">{words[0].masked}</span></span></span><span class="visually-hidden">data</span>.
+    <h1 id="hero-title">
+      {line1.map((w, i) => <><span class="w" style={`--i:${i}`}>{w}</span>{' '}</>)}<br />
+      <span class="w" style="--i:3">Not</span>{' '}<span class="w" style="--i:4">your</span>{' '}<span class="w" style="--i:5"><span class="slot" aria-hidden="true" data-words={JSON.stringify(words)}><span class="v">{words[0].raw}</span></span><span class="visually-hidden">data</span>.</span>
     </h1>
 
-    <div class="hero-grid">
-      <div class="hero-copy reveal">
-        <p class="lede">
-          MailHush masks emails, card numbers, IBANs, API keys, phone numbers, and your own words in the page
-          as it renders, so streams, screenshots, and client demos only show what you meant to show.
-        </p>
-        <div class="actions">
-          <button class="btn btn-primary open-download-modal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" /></svg>
-            Install MailHush
-          </button>
-          <a class="btn btn-ghost" href="#try">Try it on this page</a>
-        </div>
+    <div class="under">
+      <p class="lede reveal">
+        MailHush rewrites emails, card numbers, IBANs, API keys, phone numbers and your own words in the page as it
+        renders. Streams, screenshots and client demos only show what you meant to show.
+      </p>
+      <div class="actions reveal">
+        <button class="btn btn-primary open-download-modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" /></svg>
+          Install MailHush
+        </button>
+        <a class="btn btn-ghost" href="#try">Try it on this page</a>
       </div>
-
-      <figure class="screen reveal">
-        <div class="chrome">
-          <span class="url">northwind.app/account</span>
-        </div>
-        <video autoplay muted loop playsinline preload="metadata" poster="/assets/demo-poster.jpg" width="1200" height="750">
-          <source src="/assets/demo.webm" type="video/webm" />
-          <source src="/assets/demo.mp4" type="video/mp4" />
-        </video>
-        <figcaption>Recorded from MailHush 2.0 on a real page: label, partial, and dots styles, then a focused field showing what you type.</figcaption>
-      </figure>
     </div>
+
+    <figure class="screen reveal">
+      <video autoplay muted loop playsinline preload="metadata" poster="/assets/demo-poster.jpg" width="1200" height="750">
+        <source src="/assets/demo.webm" type="video/webm" />
+        <source src="/assets/demo.mp4" type="video/mp4" />
+      </video>
+      <figcaption>Recorded from MailHush 2.0 on a real page: label, partial and dots styles, then a focused field showing what you type.</figcaption>
+    </figure>
   </div>
 </section>
 
 <style>
-  .hero { position: relative; padding: 72px 0 0; }
-  h1 { font-size: clamp(46px, 8.6vw, 112px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 800; }
+  .hero { padding: 88px 0 0; }
+  h1 { font-size: clamp(64px, 11.4vw, 176px); line-height: 0.88; letter-spacing: -0.05em; }
+  .w { display: inline-block; }
+  :global(.js) .w { animation: land 0.34s var(--snap) both; animation-delay: calc(0.1s + var(--i) * 0.08s); }
 
-  /* A redaction bar sweeps over the word, shows its label, then pulls back. */
-  .redact { position: relative; display: inline-block; white-space: nowrap; }
-  .word { color: var(--red); text-decoration: underline wavy rgba(242, 163, 163, 0.5); text-decoration-thickness: 0.045em; text-underline-offset: 0.12em; }
-  .bar {
-    position: absolute;
-    inset: 0.02em -0.06em -0.1em;
-    display: grid;
-    place-items: center;
-    background: var(--mint);
-    border-radius: 0.08em;
-    clip-path: inset(0 100% 0 0);
-    transition: clip-path 0.55s var(--ease);
-  }
-  .redact.covered .bar { clip-path: inset(0 0 0 0); }
-  .word { transition: text-decoration-color 0.3s; }
-  .redact.covered .word { text-decoration-color: transparent; }
-  .redact.leaving .bar { clip-path: inset(0 0 0 100%); }
-  .label { font: 600 0.3em/1 var(--mono); letter-spacing: 0; color: var(--mint-ink); opacity: 0; transition: opacity 0.3s 0.25s; }
-  .redact.covered .label { opacity: 1; }
+  /* The extension swaps text in place, so the headline does too: raw word in red, then its label in mint. */
+  .slot { display: inline-block; vertical-align: top; white-space: nowrap; transition: width 0.14s var(--snap); }
+  .v { display: inline-block; color: var(--red); transform-origin: 30% 65%; }
+  .slot.masked .v { color: var(--mint); }
+  .v.punch { animation: punch 0.2s var(--snap); }
+  .v.squash { animation: squash 0.07s ease-in forwards; }
 
-  .hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; margin-top: 56px; align-items: start; }
-  @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; } }
-  .lede { font-size: 19px; line-height: 1.55; color: var(--text-2); max-width: 46ch; }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .under { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px 64px; align-items: end; margin-top: 56px; padding-top: 28px; border-top: 1.5px solid var(--line-2); }
+  @media (max-width: 900px) { .under { grid-template-columns: 1fr; } }
+  .lede { font-size: 20px; line-height: 1.5; color: var(--text-2); max-width: 54ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-  .screen { margin: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line-2), 0 40px 80px -30px rgba(0, 0, 0, 0.8); overflow: hidden; transition-delay: 0.15s; }
-  .chrome { display: flex; align-items: center; gap: 14px; padding: 11px 14px; background: var(--well); border-bottom: 1px solid var(--line); }
-  .url { flex: 1; font: 12px/1 var(--mono); color: var(--text-3); background: var(--bg-2); padding: 7px 10px; border-radius: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .screen { margin: 64px 0 0; border-radius: var(--radius); overflow: hidden; background: var(--card); box-shadow: 0 0 0 1.5px var(--line-2); }
   video { width: 100%; height: auto; aspect-ratio: 1200 / 750; background: #f6f7f9; }
-  figcaption { padding: 12px 16px; font-size: 13px; color: var(--text-3); border-top: 1px solid var(--line); }
+  figcaption { padding: 14px 18px; font-size: 14px; color: var(--text-3); border-top: 1.5px solid var(--line-2); }
 </style>
 
 <script>
-  const el = document.querySelector<HTMLElement>('.redact')!;
-  const word = el.querySelector<HTMLElement>('.word')!;
-  const label = el.querySelector<HTMLElement>('.label')!;
-  const words: { raw: string; masked: string }[] = JSON.parse(el.dataset.words!);
+  const slot = document.querySelector<HTMLElement>('.slot')!;
+  const v = slot.querySelector<HTMLElement>('.v')!;
+  const words: { raw: string; masked: string }[] = JSON.parse(slot.dataset.words!);
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+  // Change the text and close the gap around it in one hit.
+  const set = (text: string, masked: boolean) => {
+    const from = slot.offsetWidth;
+    v.classList.remove('squash', 'punch');
+    v.textContent = text;
+    slot.classList.toggle('masked', masked);
+    slot.style.width = 'auto';
+    const to = slot.offsetWidth;
+    slot.style.width = `${from}px`;
+    void slot.offsetWidth;
+    slot.style.width = `${to}px`;
+    v.classList.add('punch');
+  };
+
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    el.classList.add('covered');
+    v.textContent = words[0].masked;
+    slot.classList.add('masked');
     document.querySelector<HTMLVideoElement>('.screen video')?.pause();
   } else {
     (async () => {
+      await wait(1500);
       for (let i = 0; ; i = (i + 1) % words.length) {
-        word.textContent = words[i].raw;
-        label.textContent = words[i].masked;
-        el.classList.remove('leaving');
-        await wait(1300);
-        el.classList.add('covered');
-        await wait(1700);
-        el.classList.add('leaving');
-        el.classList.remove('covered');
-        await wait(560);
-        // Jump the bar back to the left edge without animating.
-        el.querySelector<HTMLElement>('.bar')!.style.transition = 'none';
-        el.classList.remove('leaving');
-        void el.offsetWidth;
-        el.querySelector<HTMLElement>('.bar')!.style.transition = '';
+        v.classList.add('squash');
+        await wait(70);
+        set(words[i].masked, true);
+        await wait(1430);
+        set(words[(i + 1) % words.length].raw, false);
+        await wait(1000);
       }
     })();
   }
