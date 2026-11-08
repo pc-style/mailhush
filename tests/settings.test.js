@@ -43,6 +43,14 @@ describe("normalizeSettings", () => {
 
   test("uses defaults when settings are absent", () => {
     expect(normalizeSettings()).toEqual(defaultSettings)
+    expect(defaultSettings.rules).toEqual([])
+  })
+
+  test("drops the old placeholder rule unless the user edited it", () => {
+    const placeholder = { id: "default-rule", pattern: "hello@example.com", replacement: "that's my fucking email" }
+    const edited = { ...placeholder, replacement: "me" }
+    expect(normalizeSettings({ rules: [placeholder] }).rules).toEqual([])
+    expect(normalizeSettings({ rules: [edited] }).rules.map((rule) => rule.replacement)).toEqual(["me"])
   })
 })
 

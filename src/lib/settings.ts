@@ -57,16 +57,7 @@ export const defaultSettings: ExtensionSettings = {
   enabled: true,
   maskStyle: "label",
   detectors: defaultDetectors(),
-  rules: [
-    {
-      id: "default-rule",
-      pattern: "hello@example.com",
-      replacement: "that's my fucking email",
-      regex: false,
-      caseSensitive: false,
-      enabled: true
-    }
-  ],
+  rules: [],
   maskInputs: true,
   maskAttributes: true,
   maskTitle: true,
@@ -115,6 +106,14 @@ export const isSiteExcluded = (hostname: string, excludedSites: string[]) => {
   return excludedSites.some((site) => host === site || host.endsWith(`.${site}`))
 }
 
+// Matches the placeholder without spelling it out in the shipped bundle.
+const isOldPlaceholderRule = (rule: CustomRule) =>
+  rule.id === "default-rule" &&
+  rule.pattern === "hello@example.com" &&
+  rule.replacement.startsWith("that's my f") &&
+  rule.replacement.endsWith(" email") &&
+  rule.replacement.length === 23
+
 type StoredSettings = Partial<Omit<ExtensionSettings, "detectors" | "rules">> & {
   detectors?: Partial<Record<DetectorId, Partial<DetectorSettings>>>
   rules?: StoredRule[]
@@ -150,7 +149,11 @@ export const normalizeSettings = (input?: StoredSettings | null): ExtensionSetti
   ) as Record<DetectorId, DetectorSettings>
 
   const rules = Array.isArray(stored.rules)
-    ? stored.rules.map(normalizeRule).filter((rule): rule is CustomRule => rule !== null)
+    ? stored.rules
+        .map(normalizeRule)
+        .filter((rule): rule is CustomRule => rule !== null)
+        // 2.0.0 and 2.0.1 shipped a crude placeholder rule; drop it unless the user changed it.
+        .filter((rule) => !isOldPlaceholderRule(rule))
     : defaultSettings.rules
 
   const excludedSites = Array.isArray(stored.excludedSites)
