@@ -65,25 +65,26 @@ jobs:
               run: |
                   if [ -n "$SUBMIT_KEYS" ]; then
                     if node -e "JSON.parse(process.env.SUBMIT_KEYS)" >/dev/null 2>&1; then
-                      echo "::notice title=Firefox publish::SUBMIT_KEYS is set and valid JSON — uploading firefox-mv2-prod.zip to Firefox Add-ons."
+                      echo "::notice title=Store publish::SUBMIT_KEYS is set and valid JSON — uploading to the Chrome Web Store and Firefox Add-ons."
                       echo "will_publish=true" >> "$GITHUB_OUTPUT"
                     else
-                      echo "::warning title=Firefox publish skipped::SUBMIT_KEYS is set but is not valid JSON — skipping Firefox Add-ons upload."
+                      echo "::warning title=Store publish skipped::SUBMIT_KEYS is set but is not valid JSON — skipping store uploads."
                       echo "will_publish=false" >> "$GITHUB_OUTPUT"
                     fi
                   else
-                    echo "::warning title=Firefox publish skipped::SUBMIT_KEYS secret is empty — skipping Firefox Add-ons upload. Add the SUBMIT_KEYS repo secret to enable auto-publishing."
+                    echo "::warning title=Store publish skipped::SUBMIT_KEYS secret is empty — skipping store uploads. Add the SUBMIT_KEYS repo secret to enable auto-publishing."
                     echo "will_publish=false" >> "$GITHUB_OUTPUT"
                   fi
 
-            - name: Publish to Firefox Add-ons
+            - name: Publish to Chrome Web Store and Firefox Add-ons
               if: ${{ steps.publish_check.outputs.will_publish == 'true' }}
               uses: PlasmoHQ/bpp@v3
               with:
                   keys: ${{ secrets.SUBMIT_KEYS }}
+                  chrome-file: build/chrome-mv3-prod.zip
                   firefox-file: build/firefox-mv2-prod.zip
 
-            - name: Confirm Firefox publish
+            - name: Confirm store publish
               if: ${{ steps.publish_check.outputs.will_publish == 'true' }}
               shell: bash
-              run: echo "::notice title=Firefox publish::Submitted firefox-mv2-prod.zip to Firefox Add-ons. Check the AMO developer dashboard for review status."
+              run: echo "::notice title=Store publish::Submitted to the Chrome Web Store and Firefox Add-ons. Check both developer dashboards for review status."
