@@ -45,7 +45,7 @@ Its output is `website/why/dist/`. To deploy it, connect `website/why` to a host
 
 ## Release automation
 
-Tags matching `v*` trigger `.github/workflows/release.yml`, which builds both packages and attaches them to a GitHub Release. Firefox submission occurs only when the repository's `SUBMIT_KEYS` secret contains valid JSON. The workflow never requires that secret for ordinary builds, and contributors should not put publishing credentials in source archives or local files.
+Tags matching `v*` trigger `.github/workflows/release.yml`, which builds both packages and attaches them to a GitHub Release. Store submission occurs only when the repository's `SUBMIT_KEYS` secret contains valid JSON in the [bpp keys format](https://raw.githubusercontent.com/PlasmoHQ/bpp/v3/keys.schema.json). A `firefox` block (`apiKey`, `apiSecret`) uploads the Firefox package to AMO through PlasmoHQ/bpp. A `chrome` block (`extId`, `clientId`, `clientSecret`, `refreshToken`) uploads the Chrome package through the Chrome Web Store V2 API and submits it for review; it publishes automatically once approved. Each store is skipped when its block is missing. The workflow never requires that secret for ordinary builds, and contributors should not put publishing credentials in source archives or local files.
 
 ---
 

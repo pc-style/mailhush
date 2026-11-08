@@ -63,27 +63,61 @@ jobs:
                   SUBMIT_KEYS: ${{ secrets.SUBMIT_KEYS }}
               shell: bash
               run: |
-                  if [ -n "$SUBMIT_KEYS" ]; then
-                    if node -e "JSON.parse(process.env.SUBMIT_KEYS)" >/dev/null 2>&1; then
-                      echo "::notice title=Firefox publish::SUBMIT_KEYS is set and valid JSON — uploading firefox-mv2-prod.zip to Firefox Add-ons."
-                      echo "will_publish=true" >> "$GITHUB_OUTPUT"
-                    else
-                      echo "::warning title=Firefox publish skipped::SUBMIT_KEYS is set but is not valid JSON — skipping Firefox Add-ons upload."
-                      echo "will_publish=false" >> "$GITHUB_OUTPUT"
-                    fi
+                  if [ -z "$SUBMIT_KEYS" ]; then
+                    echo "::warning title=Store publish skipped::SUBMIT_KEYS secret is empty — skipping store uploads. Add the SUBMIT_KEYS repo secret to enable auto-publishing."
+                  elif ! jq -e . >/dev/null 2>&1 <<<"$SUBMIT_KEYS"; then
+                    echo "::warning title=Store publish skipped::SUBMIT_KEYS is set but is not valid JSON — skipping store uploads."
                   else
-                    echo "::warning title=Firefox publish skipped::SUBMIT_KEYS secret is empty — skipping Firefox Add-ons upload. Add the SUBMIT_KEYS repo secret to enable auto-publishing."
-                    echo "will_publish=false" >> "$GITHUB_OUTPUT"
+                    for store in chrome firefox; do
+                      if jq -e ".$store" >/dev/null <<<"$SUBMIT_KEYS"; then
+                        echo "$store=true" >> "$GITHUB_OUTPUT"
+                      else
+                        echo "::warning title=Store publish skipped::SUBMIT_KEYS has no $store keys — skipping the $store upload."
+                      fi
+                    done
                   fi
 
+            # bpp v3 only speaks the Chrome Web Store V1 API, which Google retired on
+            # 2026-10-15, so Chrome is published here through the V2 API instead.
+            - name: Publish to Chrome Web Store
+              if: ${{ steps.publish_check.outputs.chrome == 'true' }}
+              env:
+                  SUBMIT_KEYS: ${{ secrets.SUBMIT_KEYS }}
+                  PUBLISHER_ID: d893d10e-a937-478e-bb8d-e017cefbc86e
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  key() { jq -r ".chrome.$1" <<<"$SUBMIT_KEYS"; }
+                  ITEM="publishers/$PUBLISHER_ID/items/$(key extId)"
+                  TOKEN=$(curl -sSf https://oauth2.googleapis.com/token \
+                    -d client_id="$(key clientId)" -d client_secret="$(key clientSecret)" \
+                    -d refresh_token="$(key refreshToken)" -d grant_type=refresh_token | jq -r .access_token)
+                  echo "::add-mask::$TOKEN"
+                  api() { curl -sS --fail-with-body -H "Authorization: Bearer $TOKEN" "$@"; }
+
+                  STATE=$(api -X POST -T build/chrome-mv3-prod.zip \
+                    "https://chromewebstore.googleapis.com/upload/v2/$ITEM:upload" | jq -r .uploadState)
+                  for _ in $(seq 30); do
+                    [ "$STATE" = IN_PROGRESS ] || break
+                    sleep 10
+                    STATE=$(api "https://chromewebstore.googleapis.com/v2/$ITEM:fetchStatus" | jq -r .lastAsyncUploadState)
+                  done
+                  if [ "$STATE" != SUCCEEDED ]; then
+                    echo "::error title=Chrome publish::Upload ended in state $STATE."
+                    exit 1
+                  fi
+
+                  api -X POST "https://chromewebstore.googleapis.com/v2/$ITEM:publish" | jq -c '{state, itemId}'
+                  echo "::notice title=Chrome publish::Uploaded chrome-mv3-prod.zip and submitted it for review. It publishes automatically once approved."
+
             - name: Publish to Firefox Add-ons
-              if: ${{ steps.publish_check.outputs.will_publish == 'true' }}
+              if: ${{ steps.publish_check.outputs.firefox == 'true' }}
               uses: PlasmoHQ/bpp@v3
               with:
                   keys: ${{ secrets.SUBMIT_KEYS }}
                   firefox-file: build/firefox-mv2-prod.zip
 
             - name: Confirm Firefox publish
-              if: ${{ steps.publish_check.outputs.will_publish == 'true' }}
+              if: ${{ steps.publish_check.outputs.firefox == 'true' }}
               shell: bash
               run: echo "::notice title=Firefox publish::Submitted firefox-mv2-prod.zip to Firefox Add-ons. Check the AMO developer dashboard for review status."
