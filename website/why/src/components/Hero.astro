@@ -83,6 +83,8 @@ const line1 = ['Share', 'your', 'screen.'];
     void slot.offsetWidth;
     slot.style.width = `${to}px`;
     v.classList.add('punch');
+    // Hand sizing back to the text once the width settles, so a resize can't leave a stale width.
+    setTimeout(() => { slot.style.width = ''; }, 160);
   };
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {

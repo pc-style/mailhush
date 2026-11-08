@@ -91,4 +91,5 @@ code, kbd { font-family: var(--body); font-weight: 600; font-variant-numeric: ta
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
   .js .reveal { opacity: 1; }
 }
+@media print { .js .reveal { opacity: 1; animation: none; } }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

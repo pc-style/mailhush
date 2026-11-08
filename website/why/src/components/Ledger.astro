@@ -38,7 +38,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
             <small>{r.description}</small>
           </span>
           <span class="mono rawval" role="cell" title={r.example}>{short(r.example)}</span>
-          <span class="mono" role="cell"><span class="pill swap" data-raw={short(r.example)}>{r.label}</span></span>
+          <span class="mono" role="cell"><span class="visually-hidden">{r.label}</span><span class="pill swap" aria-hidden="true" data-raw={short(r.example)}>{r.label}</span></span>
           <span class="mono partial" role="cell">{r.partial}</span>
         </div>
       ))}
@@ -77,6 +77,7 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
   .swap.punch { animation: punch 0.2s var(--snap); }
   :global(.js) .lrow:not(.head).wait { opacity: 0; }
   .lrow.landed { animation: land 0.28s var(--snap) both; }
+  @media print { :global(.js) .lrow:not(.head).wait { opacity: 1; } }
   @media (max-width: 860px) {
     .head { display: none; }
     .lrow { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
@@ -117,8 +118,12 @@ const onCount = rows.filter((r) => r.defaultEnabled).length;
       const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { io.disconnect(); fn(); } }, { rootMargin: '0px 0px -15% 0px' });
       io.observe(el);
     };
-    n.textContent = '0';
     watch(n, count);
     watch(ledger, play);
+    // Printing before the table scrolls into view should still show every row and label.
+    addEventListener('beforeprint', () => {
+      rows.forEach((r) => r.classList.remove('wait'));
+      swaps.forEach((s, i) => { s.textContent = labels[i]; s.classList.remove('raw-now'); });
+    });
   }
 </script>
